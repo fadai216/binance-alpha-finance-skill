@@ -8,12 +8,14 @@ from pydantic import BaseModel, Field
 
 from alpha_monitor.config import get_settings
 from alpha_monitor.service import AlphaStabilityService
+from copilot_service import BinanceCopilotService
 from finance_monitor.service import BinanceFinanceService
 
 
 settings = get_settings()
 service = AlphaStabilityService(settings)
 finance_service = BinanceFinanceService(settings)
+copilot_service = BinanceCopilotService(service, finance_service)
 
 app = FastAPI(
     title=settings.app_name,
@@ -49,6 +51,10 @@ class AnalysisItem(BaseModel):
     market_symbol: str | None = Field(default=None, description="Binance Alpha 真实 market symbol")
     chain_name: str | None = Field(default=None, description="代币所在链")
     error: str | None = Field(default=None, description="单个代币拉取异常时的错误信息")
+    risk_score: float | None = None
+    risk_label: str | None = None
+    abnormal_flag: bool | None = None
+    risk_reason: str | None = None
 
 
 class RefreshError(BaseModel):
@@ -75,6 +81,9 @@ class StabilityResponse(BaseModel):
     last_refresh_error: RefreshError | None = None
     diagnostics: dict[str, Any] | None = None
     scheduler_state: SchedulerState | None = None
+    most_stable: AnalysisItem | None = None
+    most_risky: AnalysisItem | None = None
+    abnormal_symbols: list[str] | None = None
 
 
 class HistoryAnalysisItem(BaseModel):
@@ -102,6 +111,11 @@ class FinanceProductItem(BaseModel):
     reward_label: str | None = None
     reward_type: str | None = None
     source: str
+    redeemable: bool | None = None
+    recommendation_score: float | None = None
+    recommendation_reason: list[str] | None = None
+    risk_hint: str | None = None
+    estimated_min_requirement_usd: float | None = None
 
 
 class FinanceActivityItem(BaseModel):
@@ -115,6 +129,15 @@ class FinanceActivityItem(BaseModel):
     publish_date: str | None = None
     end_time: str | None = None
     source: str | None = None
+    score: float | None = None
+    score_label: str | None = None
+    reasons: list[str] | None = None
+    participation_difficulty: str | None = None
+    time_urgency: str | None = None
+    estimated_min_requirement: str | None = None
+    estimated_min_requirement_usd: float | None = None
+    low_barrier: bool | None = None
+    low_barrier_reason: str | None = None
 
 
 class FinanceListResponse(BaseModel):
@@ -141,6 +164,16 @@ class FinanceHistorySnapshot(BaseModel):
     timestamp: str
     products: list[FinanceProductItem]
     activities: list[FinanceActivityItem]
+
+
+class SummaryResponse(BaseModel):
+    style: str
+    updated_at: str
+    top_alpha_opportunity: dict[str, Any] | None = None
+    top_finance_opportunity: dict[str, Any] | None = None
+    top_activity_opportunity: dict[str, Any] | None = None
+    overall_highlights: list[dict[str, Any]]
+    summary_text: str
 
 
 EXAMPLE_RESPONSE = {
@@ -318,6 +351,80 @@ EXAMPLE_FINANCE_HISTORY_RESPONSE = [
     }
 ]
 
+EXAMPLE_ACTIVITY_SCORED_RESPONSE = {
+    "items": [
+        {
+            "title": "Binance Earn: Enjoy Up to 8% APR with RLUSD Flexible Products – 10,000 RLUSD Limit Available!",
+            "activity_type": "finance",
+            "reward_summary": "Users who subscribe to RLUSD Flexible Products may enjoy up to 8% APR.",
+            "reward_type": "apr",
+            "status": "active",
+            "score": 78.0,
+            "score_label": "high",
+            "reasons": ["奖励强度高，APR 突出", "参与动作相对简单", "门槛约 500 USD，可视为低门槛"],
+            "participation_difficulty": "low",
+            "time_urgency": "medium",
+            "estimated_min_requirement": None,
+            "estimated_min_requirement_usd": None,
+            "low_barrier": True,
+            "low_barrier_reason": "无需明显资金门槛，操作简单"
+        }
+    ],
+    "updated_at": "2026-03-14T05:58:33.776279+00:00",
+    "source": "cms-activities",
+    "total": 1
+}
+
+EXAMPLE_FINANCE_RECOMMEND_RESPONSE = {
+    "items": [
+        {
+            "product_id": "activity:65317d61d1c445f99f73a04c05233dd2",
+            "product_name": "Enjoy Up to 8% APR with RLUSD Flexible Products",
+            "product_type": "activity",
+            "asset": "RLUSD",
+            "apr": 8.0,
+            "term_days": 0,
+            "source": "activity-derived",
+            "redeemable": True,
+            "recommendation_score": 86.0,
+            "recommendation_reason": ["APR 较高", "可灵活赎回", "活动派生机会"],
+            "risk_hint": "medium"
+        }
+    ],
+    "updated_at": "2026-03-14T05:58:33.776279+00:00",
+    "source": "public-finance-fallback+cms-activities+activity-derived-products",
+    "total": 1
+}
+
+EXAMPLE_SUMMARY_RESPONSE = {
+    "style": "balanced",
+    "updated_at": "2026-03-14T06:00:00+00:00",
+    "top_alpha_opportunity": {
+        "symbol": "GUAUSDT",
+        "risk_label": "low",
+        "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+    },
+    "top_finance_opportunity": {
+        "product_id": "activity:65317d61d1c445f99f73a04c05233dd2",
+        "product_name": "Enjoy Up to 8% APR with RLUSD Flexible Products",
+        "recommendation_score": 86.0,
+        "risk_hint": "medium"
+    },
+    "top_activity_opportunity": {
+        "title": "Binance Earn: Enjoy Up to 8% APR with RLUSD Flexible Products – 10,000 RLUSD Limit Available!",
+        "score": 78.0,
+        "low_barrier": True
+    },
+    "overall_highlights": [
+        {
+            "type": "alpha",
+            "title": "GUAUSDT",
+            "reason": "风险排序靠前"
+        }
+    ],
+    "summary_text": "今日 Binance 机会总结（balanced 风格）..."
+}
+
 
 @app.get("/health", tags=["system"], summary="健康检查")
 def health() -> dict[str, str]:
@@ -377,6 +484,18 @@ def get_alpha_stability_history(
 
 
 @app.get(
+    "/alpha/stability/ranked",
+    response_model=StabilityResponse,
+    tags=["alpha"],
+    summary="获取 Alpha 风险排序结果",
+)
+def get_alpha_stability_ranked(
+    top: int = Query(default=settings.default_top, ge=1, le=20),
+) -> dict[str, Any]:
+    return service.get_ranked_report(top=top)
+
+
+@app.get(
     "/binance/finance",
     response_model=FinanceListResponse,
     tags=["finance"],
@@ -385,15 +504,23 @@ def get_alpha_stability_history(
     responses={200: {"content": {"application/json": {"example": EXAMPLE_FINANCE_RESPONSE}}}},
 )
 def get_binance_finance(
-    sort_by: str = Query(default="apr", pattern="^(apr|term_days|product_name)$"),
+    sort_by: str = Query(default="apr", pattern="^(apr|term|term_days|product_name|stability|recommendation)$"),
     order: str = Query(default="desc", pattern="^(asc|desc)$"),
     product_type: str = Query(default="all", pattern="^(all|flexible|locked|activity)$"),
+    min_apr: float = Query(default=0.0, ge=0.0),
+    max_term: int | None = Query(default=None, ge=0),
+    redeemable_only: bool = False,
+    source: str | None = Query(default=None),
     limit: int = Query(default=settings.finance_default_limit, ge=1, le=100),
 ) -> dict[str, Any]:
     return finance_service.get_products(
         sort_by=sort_by,
         order=order,
         product_type=product_type,
+        min_apr=min_apr,
+        max_term=max_term,
+        redeemable_only=redeemable_only,
+        source_filter=source,
         limit=limit,
     )
 
@@ -409,11 +536,71 @@ def get_binance_finance(
 def get_binance_finance_activity(
     status: str = Query(default="active", pattern="^(all|active|expired|unknown)$"),
     reward_type: str = Query(default="all", pattern="^(all|apr|points|voucher|token|unknown)$"),
+    max_capital: float | None = Query(default=None, ge=0.0),
+    low_barrier_only: bool = False,
+    active_only: bool = False,
     limit: int = Query(default=settings.finance_default_limit, ge=1, le=100),
 ) -> dict[str, Any]:
     return finance_service.get_activities(
         status=status,
         reward_type=reward_type,
+        max_capital=max_capital,
+        low_barrier_only=low_barrier_only,
+        active_only=active_only,
+        limit=limit,
+    )
+
+
+@app.get(
+    "/binance/finance/activity/scored",
+    response_model=FinanceActivityResponse,
+    tags=["finance"],
+    summary="获取活动评分列表",
+    responses={200: {"content": {"application/json": {"example": EXAMPLE_ACTIVITY_SCORED_RESPONSE}}}},
+)
+def get_binance_finance_activity_scored(
+    status: str = Query(default="active", pattern="^(all|active|expired|unknown)$"),
+    reward_type: str = Query(default="all", pattern="^(all|apr|points|voucher|token|unknown)$"),
+    max_capital: float | None = Query(default=None, ge=0.0),
+    low_barrier_only: bool = False,
+    active_only: bool = True,
+    limit: int = Query(default=settings.finance_default_limit, ge=1, le=100),
+) -> dict[str, Any]:
+    return finance_service.get_scored_activities(
+        status=status,
+        reward_type=reward_type,
+        max_capital=max_capital,
+        low_barrier_only=low_barrier_only,
+        active_only=active_only,
+        limit=limit,
+    )
+
+
+@app.get(
+    "/binance/finance/recommend",
+    response_model=FinanceListResponse,
+    tags=["finance"],
+    summary="获取理财智能推荐结果",
+    responses={200: {"content": {"application/json": {"example": EXAMPLE_FINANCE_RECOMMEND_RESPONSE}}}},
+)
+def get_binance_finance_recommend(
+    min_apr: float = Query(default=0.0, ge=0.0),
+    max_term: int | None = Query(default=None, ge=0),
+    redeemable_only: bool = False,
+    source: str | None = Query(default=None),
+    product_type: str = Query(default="all", pattern="^(all|flexible|locked|activity)$"),
+    sort_by: str = Query(default="stability", pattern="^(apr|term|term_days|stability|recommendation)$"),
+    order: str = Query(default="desc", pattern="^(asc|desc)$"),
+    limit: int = Query(default=settings.finance_default_limit, ge=1, le=100),
+) -> dict[str, Any]:
+    return finance_service.get_recommended_products(
+        min_apr=min_apr,
+        max_term=max_term,
+        redeemable_only=redeemable_only,
+        source_filter=source,
+        product_type=product_type,
+        sort_by=sort_by,
+        order=order,
         limit=limit,
     )
 
@@ -434,3 +621,16 @@ def get_binance_finance_history(
     if product_id or symbol:
         return finance_service.get_history_for_product(product_id=product_id, symbol=symbol, limit=limit)
     return finance_service.get_history(limit=limit)
+
+
+@app.get(
+    "/binance/copilot/summary",
+    response_model=SummaryResponse,
+    tags=["finance"],
+    summary="获取今日 Binance 机会总结",
+    responses={200: {"content": {"application/json": {"example": EXAMPLE_SUMMARY_RESPONSE}}}},
+)
+def get_binance_copilot_summary(
+    style: str = Query(default="balanced", pattern="^(conservative|balanced|aggressive)$"),
+) -> dict[str, Any]:
+    return copilot_service.build_summary(style=style)

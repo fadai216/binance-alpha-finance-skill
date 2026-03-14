@@ -64,6 +64,7 @@ class AlphaStabilityService:
                 analysis.append(metrics)
 
         analysis.sort(key=lambda item: item["score"])
+        analysis = [self._annotate_risk(item) for item in analysis]
         alerts = self._build_alerts(analysis, new_symbols)
         recommendation = self._build_recommendation(analysis, new_symbols)
 
@@ -128,7 +129,28 @@ class AlphaStabilityService:
         sliced_report["last_refresh_error"] = state.get("last_refresh_error")
         sliced_report["diagnostics"] = latest_report.get("diagnostics") or state.get("last_fetch_diagnostics")
         sliced_report["scheduler_state"] = state.get("scheduler_state")
+        sliced_report["most_stable"] = latest_report["analysis"][0] if latest_report["analysis"] else None
+        sliced_report["most_risky"] = latest_report["analysis"][-1] if latest_report["analysis"] else None
+        sliced_report["abnormal_symbols"] = [
+            item["symbol"] for item in latest_report["analysis"] if item.get("abnormal_flag")
+        ]
         return sliced_report
+
+    def get_ranked_report(self, top: int | None = None) -> dict[str, Any]:
+        report = self.get_report(top=top)
+        analysis = list(report.get("analysis") or [])
+        report["analysis"] = sorted(
+            analysis,
+            key=lambda item: float(item.get("risk_score") or 0),
+        )[: len(analysis)]
+        report["most_stable"] = report["analysis"][0] if report["analysis"] else None
+        report["most_risky"] = max(
+            analysis,
+            key=lambda item: float(item.get("risk_score") or 0),
+            default=None,
+        )
+        report["abnormal_symbols"] = [item["symbol"] for item in analysis if item.get("abnormal_flag")]
+        return report
 
     def get_history(self, limit: int = 12) -> list[dict[str, Any]]:
         limit = max(1, limit)
@@ -142,10 +164,14 @@ class AlphaStabilityService:
                     "timestamp": latest_report["updated_at"],
                     "analysis": [
                         {
-                            "symbol": item["symbol"],
-                            "volatility": item["volatility"],
-                            "spread": item["spread"],
-                            "score": item["score"],
+                            **self._annotate_risk(
+                                {
+                                    "symbol": item["symbol"],
+                                    "volatility": item["volatility"],
+                                    "spread": item["spread"],
+                                    "score": item["score"],
+                                }
+                            ),
                         }
                         for item in latest_report.get("analysis", [])
                     ],
@@ -155,13 +181,14 @@ class AlphaStabilityService:
 
         snapshots = self.history_store.fetch_recent_snapshots(limit=limit)
         if snapshots:
-            return snapshots
+            return self._annotate_history_risk(snapshots)
 
         try:
             self.refresh_safe()
         except Exception:
             return []
-        return self.history_store.fetch_recent_snapshots(limit=limit)
+        snapshots = self.history_store.fetch_recent_snapshots(limit=limit)
+        return self._annotate_history_risk(snapshots)
 
     def _collect_token_metrics(self, token: dict[str, Any]) -> dict[str, Any]:
         klines = self.client.fetch_klines(
@@ -326,3 +353,65 @@ class AlphaStabilityService:
             return []
         required_keys = {"market_symbol", "display_symbol"}
         return [token for token in tokens if required_keys.issubset(token)]
+
+    def _annotate_risk(self, item: dict[str, Any]) -> dict[str, Any]:
+        annotated = dict(item)
+        if annotated.get("error"):
+            annotated["risk_score"] = 100.0
+            annotated["risk_label"] = "high"
+            annotated["abnormal_flag"] = True
+            annotated["risk_reason"] = "行情抓取失败，风险不可判定"
+            return annotated
+
+        volatility = float(annotated.get("volatility") or 0)
+        spread = float(annotated.get("spread") or 0)
+        score = float(annotated.get("score") or 0)
+        vol_component = min((volatility / max(self.settings.volatility_alert_threshold, 1e-9)) * 45, 55)
+        spread_component = min((spread / 0.01) * 30, 30)
+        score_component = min((score / 0.01) * 20, 20)
+        risk_score = round(min(vol_component + spread_component + score_component, 100.0), 2)
+        abnormal_flag = (
+            volatility > self.settings.volatility_alert_threshold
+            or spread > 0.008
+            or risk_score >= 75
+        )
+
+        reasons: list[str] = []
+        if volatility > self.settings.volatility_alert_threshold:
+            reasons.append("波动率偏高")
+        elif volatility < self.settings.volatility_alert_threshold / 2:
+            reasons.append("波动率相对平稳")
+        if spread > 0.005:
+            reasons.append("盘口价差较大")
+        elif spread < 0.002:
+            reasons.append("盘口价差较小")
+        if score > 0.004:
+            reasons.append("综合稳定性偏弱")
+        elif score < 0.002:
+            reasons.append("综合稳定性较好")
+
+        annotated["risk_score"] = risk_score
+        annotated["risk_label"] = self._risk_label(risk_score)
+        annotated["abnormal_flag"] = abnormal_flag
+        annotated["risk_reason"] = "；".join(reasons[:3]) if reasons else "风险中性"
+        return annotated
+
+    @staticmethod
+    def _risk_label(risk_score: float) -> str:
+        if risk_score >= 70:
+            return "high"
+        if risk_score >= 40:
+            return "medium"
+        return "low"
+
+    def _annotate_history_risk(self, snapshots: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        annotated: list[dict[str, Any]] = []
+        for snapshot in snapshots:
+            annotated.append(
+                {
+                    "timestamp": snapshot["timestamp"],
+                    "analysis": [self._annotate_risk(item) for item in snapshot.get("analysis", [])],
+                    "alerts": snapshot.get("alerts", []),
+                }
+            )
+        return annotated

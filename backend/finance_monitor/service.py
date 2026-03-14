@@ -74,19 +74,39 @@ class BinanceFinanceService:
         order: str = "desc",
         product_type: str = "all",
         limit: int | None = None,
+        min_apr: float = 0.0,
+        max_term: int | None = None,
+        redeemable_only: bool = False,
+        source_filter: str | None = None,
     ) -> dict[str, Any]:
         limit = limit or self.settings.finance_default_limit
         snapshot, state = self._get_latest_snapshot()
-        items = list(snapshot.get("products") or [])
+        items = [self._annotate_product(item) for item in list(snapshot.get("products") or [])]
 
         if product_type != "all":
             items = [item for item in items if item.get("product_type") == product_type]
+        if source_filter:
+            items = [item for item in items if item.get("source") == source_filter]
+        if min_apr > 0:
+            items = [item for item in items if float(item.get("apr") or 0) >= min_apr]
+        if max_term is not None:
+            items = [
+                item
+                for item in items
+                if int(item.get("term_days") or 0) == 0 or int(item.get("term_days") or 0) <= max_term
+            ]
+        if redeemable_only:
+            items = [item for item in items if item.get("redeemable")]
 
         reverse = order != "asc"
-        if sort_by == "term_days":
+        if sort_by in {"term", "term_days"}:
             items.sort(key=lambda item: int(item.get("term_days") or 0), reverse=reverse)
+        elif sort_by == "stability":
+            items.sort(key=self._product_stability_sort_key, reverse=reverse)
         elif sort_by == "product_name":
             items.sort(key=lambda item: item.get("product_name") or "", reverse=reverse)
+        elif sort_by == "recommendation":
+            items.sort(key=lambda item: float(item.get("recommendation_score") or 0), reverse=reverse)
         else:
             items.sort(key=lambda item: float(item.get("apr") or 0), reverse=reverse)
 
@@ -100,21 +120,57 @@ class BinanceFinanceService:
             "scheduler_state": state.get("scheduler_state"),
         }
 
+    def get_recommended_products(
+        self,
+        *,
+        min_apr: float = 0.0,
+        max_term: int | None = None,
+        redeemable_only: bool = False,
+        source_filter: str | None = None,
+        product_type: str = "all",
+        sort_by: str = "stability",
+        order: str = "desc",
+        limit: int | None = None,
+    ) -> dict[str, Any]:
+        return self.get_products(
+            sort_by=sort_by,
+            order=order,
+            product_type=product_type,
+            limit=limit,
+            min_apr=min_apr,
+            max_term=max_term,
+            redeemable_only=redeemable_only,
+            source_filter=source_filter,
+        )
+
     def get_activities(
         self,
         *,
         status: str = "active",
         reward_type: str = "all",
         limit: int | None = None,
+        max_capital: float | None = None,
+        low_barrier_only: bool = False,
+        active_only: bool = False,
     ) -> dict[str, Any]:
         limit = limit or self.settings.finance_default_limit
         snapshot, state = self._get_latest_snapshot()
-        items = list(snapshot.get("activities") or [])
+        items = [self._annotate_activity(item) for item in list(snapshot.get("activities") or [])]
 
-        if status != "all":
-            items = [item for item in items if item.get("status") == status]
+        effective_status = "active" if active_only and status == "all" else status
+        if effective_status != "all":
+            items = [item for item in items if item.get("status") == effective_status]
         if reward_type != "all":
             items = [item for item in items if item.get("reward_type") == reward_type]
+        if max_capital is not None:
+            items = [
+                item
+                for item in items
+                if item.get("estimated_min_requirement_usd") is None
+                or float(item.get("estimated_min_requirement_usd") or 0) <= max_capital
+            ]
+        if low_barrier_only:
+            items = [item for item in items if item.get("low_barrier")]
 
         items.sort(
             key=lambda item: item.get("publish_date") or "",
@@ -129,6 +185,30 @@ class BinanceFinanceService:
             "diagnostics": snapshot.get("diagnostics") or state.get("last_fetch_diagnostics"),
             "scheduler_state": state.get("scheduler_state"),
         }
+
+    def get_scored_activities(
+        self,
+        *,
+        status: str = "active",
+        reward_type: str = "all",
+        limit: int | None = None,
+        max_capital: float | None = None,
+        low_barrier_only: bool = False,
+        active_only: bool = True,
+    ) -> dict[str, Any]:
+        response = self.get_activities(
+            status=status,
+            reward_type=reward_type,
+            limit=None,
+            max_capital=max_capital,
+            low_barrier_only=low_barrier_only,
+            active_only=active_only,
+        )
+        items = list(response["items"])
+        items.sort(key=lambda item: float(item.get("score") or 0), reverse=True)
+        response["items"] = items[: (limit or self.settings.finance_default_limit)]
+        response["total"] = len(items)
+        return response
 
     def get_history(self, limit: int | None = None) -> list[dict[str, Any]]:
         limit = limit or self.settings.finance_history_default_limit
@@ -437,6 +517,128 @@ class BinanceFinanceService:
         normalized["products"] = products
         return normalized
 
+    def _annotate_product(self, item: dict[str, Any]) -> dict[str, Any]:
+        annotated = dict(item)
+        apr = float(annotated.get("apr") or 0)
+        term_days = int(annotated.get("term_days") or 0)
+        source = annotated.get("source") or self._default_product_source(annotated.get("product_type"))
+        redeemable = bool(
+            annotated.get("redeemable")
+            if annotated.get("redeemable") is not None
+            else term_days == 0 or annotated.get("product_type") == "flexible"
+        )
+        estimated_min_requirement = annotated.get("min_purchase_amount")
+        min_req_usd = self._amount_to_usd(estimated_min_requirement)
+        reasons: list[str] = []
+        score = 0.0
+
+        if apr >= 8:
+            score += 34
+            reasons.append("APR 较高")
+        elif apr >= 4:
+            score += 26
+            reasons.append("APR 较好")
+        elif apr >= 2:
+            score += 18
+            reasons.append("APR 达到可参与区间")
+        elif apr > 0:
+            score += 10
+            reasons.append("APR 可接受")
+
+        if redeemable:
+            score += 24
+            reasons.append("可灵活赎回")
+        elif term_days <= 30:
+            score += 14
+            reasons.append("期限较短")
+        elif term_days <= 90:
+            score += 8
+            reasons.append("期限中等")
+        else:
+            score += 2
+            reasons.append("锁定期较长")
+
+        if source == "signed-sapi":
+            score += 18
+            reasons.append("官方 Simple Earn 来源")
+        elif source == "activity-derived":
+            score += 10
+            reasons.append("活动派生机会")
+        else:
+            score += 6
+            reasons.append("回退来源，需自行复核")
+
+        if min_req_usd is None:
+            score += 6
+        elif min_req_usd <= 10:
+            score += 10
+            reasons.append("起投门槛低")
+        elif min_req_usd <= 100:
+            score += 6
+            reasons.append("起投门槛适中")
+
+        risk_hint = self._infer_product_risk_hint(
+            source=source,
+            product_type=annotated.get("product_type"),
+            term_days=term_days,
+            apr=apr,
+            redeemable=redeemable,
+        )
+        if risk_hint == "low":
+            score += 10
+            reasons.append("风险相对低")
+        elif risk_hint == "medium":
+            score += 4
+        else:
+            score -= 4
+            reasons.append("需关注活动或锁仓风险")
+
+        annotated["source"] = source
+        annotated["redeemable"] = redeemable
+        annotated["recommendation_score"] = round(max(min(score, 100.0), 0.0), 2)
+        annotated["recommendation_reason"] = reasons[:4]
+        annotated["risk_hint"] = risk_hint
+        annotated["estimated_min_requirement_usd"] = min_req_usd
+        return annotated
+
+    def _annotate_activity(self, item: dict[str, Any]) -> dict[str, Any]:
+        annotated = dict(item)
+        title = annotated.get("title") or ""
+        condition = annotated.get("participation_condition") or ""
+        reward_summary = annotated.get("reward_summary") or ""
+        blob = " ".join([title, condition, reward_summary])
+        estimated_requirement = self._extract_min_amount(blob)
+        estimated_requirement_usd = self._amount_to_usd(estimated_requirement)
+        reward_score, reward_reason = self._activity_reward_strength(blob)
+        difficulty, difficulty_penalty, difficulty_reason = self._activity_difficulty(blob)
+        restriction_penalty, restriction_reason = self._activity_restrictions(blob)
+        urgency, urgency_bonus, urgency_reason = self._activity_urgency(annotated.get("end_time"))
+
+        base_score = reward_score + urgency_bonus - difficulty_penalty - restriction_penalty
+        if annotated.get("status") == "active":
+            base_score += 8
+        elif annotated.get("status") == "expired":
+            base_score -= 35
+
+        low_barrier, low_barrier_reason = self._is_low_barrier_activity(
+            estimated_requirement=estimated_requirement,
+            estimated_requirement_usd=estimated_requirement_usd,
+            difficulty=difficulty,
+            blob=blob,
+        )
+
+        reasons = [reason for reason in [reward_reason, difficulty_reason, restriction_reason, urgency_reason, low_barrier_reason] if reason]
+        annotated["score"] = round(max(min(base_score, 100.0), 0.0), 2)
+        annotated["score_label"] = self._score_label(float(annotated["score"]), high=68, medium=42)
+        annotated["reasons"] = reasons[:5]
+        annotated["participation_difficulty"] = difficulty
+        annotated["time_urgency"] = urgency
+        annotated["estimated_min_requirement"] = estimated_requirement
+        annotated["estimated_min_requirement_usd"] = estimated_requirement_usd
+        annotated["low_barrier"] = low_barrier
+        annotated["low_barrier_reason"] = low_barrier_reason
+        return annotated
+
     @staticmethod
     def _extract_plain_text(raw_body: str) -> str:
         if not raw_body:
@@ -592,6 +794,12 @@ class BinanceFinanceService:
             text,
             re.IGNORECASE,
         )
+        if match:
+            return match.group(1).strip()
+        match = re.search(r"at least\s+([0-9,.]+\s*[A-Z]{2,10})", text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        match = re.search(r"with at least\s+([0-9,.]+\s*[A-Z]{2,10})", text, re.IGNORECASE)
         return match.group(1).strip() if match else None
 
     @staticmethod
@@ -689,6 +897,144 @@ class BinanceFinanceService:
         if product_type in {"flexible", "locked"}:
             return "public-finance-fallback"
         return "public-finance-fallback"
+
+    @staticmethod
+    def _amount_to_usd(raw_amount: str | None) -> float | None:
+        if not raw_amount:
+            return None
+        match = re.search(r"([0-9,.]+)\s*([A-Z]{2,10})", raw_amount)
+        if not match:
+            return None
+        value = float(match.group(1).replace(",", ""))
+        unit = match.group(2).upper()
+        if unit in {"USDT", "USDC", "FDUSD", "BUSD", "RLUSD", "USD"}:
+            return value
+        return None
+
+    @staticmethod
+    def _infer_product_risk_hint(
+        *,
+        source: str,
+        product_type: str | None,
+        term_days: int,
+        apr: float,
+        redeemable: bool,
+    ) -> str:
+        if source == "signed-sapi" and redeemable and apr <= 8:
+            return "low"
+        if product_type == "locked" and term_days > 90:
+            return "high"
+        if source == "activity-derived" and apr >= 8:
+            return "medium"
+        if source == "public-finance-fallback":
+            return "medium"
+        return "low" if redeemable else "medium"
+
+    @staticmethod
+    def _activity_reward_strength(text: str) -> tuple[float, str | None]:
+        apr = BinanceFinanceService._extract_apr(text)
+        if apr >= 8:
+            return 42.0, "奖励强度高，APR 突出"
+        if apr >= 4:
+            return 32.0, "奖励强度较高"
+        if apr > 0:
+            return 20.0, "带有 APR 奖励"
+
+        reward_match = re.search(
+            r"(?<![A-Za-z])([0-9][0-9,]*(?:\.\d+)?)\s*(K|M)?\s*(USDT|USDC|USD)?\b",
+            text,
+            re.IGNORECASE,
+        )
+        if reward_match:
+            value = float(reward_match.group(1).replace(",", ""))
+            suffix = (reward_match.group(2) or "").upper()
+            if suffix == "K":
+                value *= 1_000
+            elif suffix == "M":
+                value *= 1_000_000
+            if value >= 100_000:
+                return 34.0, "奖励池规模大"
+            if value >= 10_000:
+                return 24.0, "奖励池规模中等"
+        return 12.0, "奖励信息一般"
+
+    @staticmethod
+    def _activity_difficulty(text: str) -> tuple[str, float, str | None]:
+        lower = text.lower()
+        if any(keyword in lower for keyword in ["leaderboard", "futures", "trade volume", "trading competition", "creatorpad"]):
+            return "high", 18.0, "参与复杂度高"
+        if any(keyword in lower for keyword in ["subscribe", "trade", "wallet", "holders", "net subscriptions"]):
+            return "medium", 10.0, "需要完成指定参与动作"
+        return "low", 4.0, "参与动作相对简单"
+
+    @staticmethod
+    def _activity_restrictions(text: str) -> tuple[float, str | None]:
+        lower = text.lower()
+        penalties = 0.0
+        reasons: list[str] = []
+        if any(keyword in lower for keyword in ["kyc", "verify", "identity verification"]):
+            penalties += 12
+            reasons.append("存在 KYC/认证限制")
+        if any(keyword in lower for keyword in ["eligible users", "selected users", "region", "jurisdiction"]):
+            penalties += 8
+            reasons.append("存在地区或资格限制")
+        if any(keyword in lower for keyword in ["holders", "holding", "maintain", "vip"]):
+            penalties += 6
+            reasons.append("需要额外持仓或资格")
+        return penalties, "；".join(reasons) if reasons else None
+
+    def _activity_urgency(self, end_time: str | None) -> tuple[str, float, str | None]:
+        if not end_time:
+            return "low", 2.0, "无明确截止时间"
+        try:
+            end = datetime.fromisoformat(end_time)
+        except ValueError:
+            return "low", 2.0, None
+        remaining = end - datetime.now(UTC)
+        if remaining <= timedelta(days=1):
+            return "high", 12.0, "接近截止，时效性强"
+        if remaining <= timedelta(days=3):
+            return "medium", 8.0, "剩余时间较短"
+        return "low", 3.0, "时间相对充足"
+
+    @staticmethod
+    def _is_low_barrier_activity(
+        *,
+        estimated_requirement: str | None,
+        estimated_requirement_usd: float | None,
+        difficulty: str,
+        blob: str,
+    ) -> tuple[bool, str]:
+        lower = blob.lower()
+        if any(keyword in lower for keyword in ["kyc", "identity verification", "vip", "leaderboard"]):
+            return False, "存在额外资格或高复杂度要求"
+        if estimated_requirement_usd is not None:
+            if estimated_requirement_usd <= 500:
+                return True, f"门槛约 {estimated_requirement_usd:.0f} USD，可视为低门槛"
+            return False, f"门槛约 {estimated_requirement_usd:.0f} USD，偏高"
+        if estimated_requirement:
+            return False, f"存在最低参与要求：{estimated_requirement}"
+        if difficulty == "low":
+            return True, "无需明显资金门槛，操作简单"
+        return difficulty != "high", "未发现明显大资金门槛"
+
+    @staticmethod
+    def _product_stability_sort_key(item: dict[str, Any]) -> tuple[float, int, int, float]:
+        risk_order = {"low": 0, "medium": 1, "high": 2}
+        return (
+            risk_order.get(str(item.get("risk_hint")), 3),
+            0 if item.get("redeemable") else 1,
+            int(item.get("term_days") or 0),
+            -float(item.get("apr") or 0),
+        )
+
+    @staticmethod
+    def _score_label(score: float, *, high: float, medium: float) -> str:
+        if score >= high:
+            return "high"
+        if score >= medium:
+            return "medium"
+        return "low"
 
     @staticmethod
     def _format_publish_date(value: Any) -> str | None:
