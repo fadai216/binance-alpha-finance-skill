@@ -77,7 +77,6 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
 - [x] **v1.1** - 算法升级：Alpha 风险评分与活动参与评估。
 - [x] **v1.4** - 稳定性增强：支持代理、自动重试与本地 Dashboard。
 - [ ] **v1.5** - **智能预警**：支持 Telegram / Discord 推送高收益机会。
-- [ ] **v2.0** - **全平台支持**：集成 OKX, Bybit 等理财模块。
 
 ---
 
