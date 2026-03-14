@@ -39,6 +39,20 @@ with open(sys.argv[1], 'r', encoding='utf-8') as f:
 PY
 )"
 
+PROXY_URL="$(python3 - <<'PY' "$CONFIG"
+import json, sys
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    print(json.load(f).get("proxy", ""))
+PY
+)"
+
+NO_PROXY_VALUE="$(python3 - <<'PY' "$CONFIG"
+import json, sys
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    print(json.load(f).get("noProxy", "127.0.0.1,localhost,.local"))
+PY
+)"
+
 RUNTIME_DIR="$SKILL_ROOT/.runtime"
 mkdir -p "$RUNTIME_DIR"
 HEALTH_URL="http://${API_HOST}:${API_PORT}/health"
@@ -58,7 +72,12 @@ if lsof -nP -iTCP:"$API_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
   exit 1
 fi
 
-nohup /bin/zsh -lc "cd '$BACKEND_ROOT' && source '$VENV_DIR/bin/activate' && uvicorn main:app --host '$API_HOST' --port '$API_PORT'" > "$RUNTIME_DIR/skill-api.log" 2>&1 &
+ENV_EXPORTS="export NO_PROXY='$NO_PROXY_VALUE'; export no_proxy='$NO_PROXY_VALUE';"
+if [ -n "$PROXY_URL" ]; then
+  ENV_EXPORTS="$ENV_EXPORTS export OUTBOUND_PROXY='$PROXY_URL'; export HTTP_PROXY='$PROXY_URL'; export HTTPS_PROXY='$PROXY_URL'; export http_proxy='$PROXY_URL'; export https_proxy='$PROXY_URL'; export ALL_PROXY='$PROXY_URL'; export all_proxy='$PROXY_URL';"
+fi
+
+nohup /bin/zsh -lc "$ENV_EXPORTS cd '$BACKEND_ROOT' && source '$VENV_DIR/bin/activate' && uvicorn main:app --host '$API_HOST' --port '$API_PORT'" > "$RUNTIME_DIR/skill-api.log" 2>&1 &
 
 for _ in 1 2 3 4 5 6 7 8 9 10; do
   if curl -fsS "$HEALTH_URL" >/dev/null 2>&1; then
@@ -86,7 +105,7 @@ if [ -f "$SCHEDULER_PID_FILE" ]; then
   fi
 fi
 
-nohup /bin/zsh -lc "cd '$BACKEND_ROOT' && source '$VENV_DIR/bin/activate' && python scheduler.py" > "$SCHEDULER_LOG" 2>&1 &
+nohup /bin/zsh -lc "$ENV_EXPORTS cd '$BACKEND_ROOT' && source '$VENV_DIR/bin/activate' && python scheduler.py" > "$SCHEDULER_LOG" 2>&1 &
 echo $! > "$SCHEDULER_PID_FILE"
 echo "Scheduler started (pid=$(cat "$SCHEDULER_PID_FILE"))"
 exit 0

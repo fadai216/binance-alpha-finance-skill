@@ -1,132 +1,263 @@
-# 🚀 Binance Alpha & Finance Skill for OpenClaw
+# Binance Alpha Finance Skill
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Binance-Alpha%20%26%20Finance-F3BA2F?style=for-the-badge&logo=binance&logoColor=white" />
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](./backend/requirements.txt)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688.svg)](./backend/main.py)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-black.svg)](./SKILL.md)
 
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License"></a>
-  <a href="./backend/requirements.txt"><img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
-  <a href="./backend/main.py"><img src="https://img.shields.io/badge/FastAPI-Backend-009688.svg?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI"></a>
-  <a href="./SKILL.md"><img src="https://img.shields.io/badge/OpenClaw-Skill-black.svg?style=flat-square" alt="OpenClaw"></a>
-  <a href="https://github.com/fadai216/binance-alpha-finance-skill/stargazers"><img src="https://img.shields.io/github/stars/fadai216/binance-alpha-finance-skill?style=flat-square" alt="Stars"></a>
-</p>
+Self-hosted OpenClaw skill for:
 
----
+- Binance Alpha 4x points token stability analysis
+- Binance finance product discovery
+- Binance activity discovery
+- product-level finance history
+- scored activities and low-barrier filtering
+- finance recommendations
+- Alpha risk ranking and trend analysis
+- Binance copilot daily summary
 
-**Binance Alpha & Finance Skill** 是一个专为 [OpenClaw](https://github.com/openclaw/openclaw) AI Agent 框架设计的自托管插件。它能够自动化监控币安（Binance）的高收益机会、理财产品及 Alpha 积分代币，并提供智能投资建议。
+中文文档：
 
-[📖 中文保姆级教程 (Tutorial)](./docs/TUTORIAL.zh-CN.md) | [🤖 AI 提示词 (Prompts)](./docs/OPENCLAW_PROMPTS.zh-CN.md) | [🆕 更新日志 (Changelog)](./CHANGELOG.md)
+- [docs/TUTORIAL.zh-CN.md](./docs/TUTORIAL.zh-CN.md)
+- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)
+- [docs/ALGORITHM.md](./docs/ALGORITHM.md)
 
----
+## Features
 
-## 🌟 核心功能 (What's Inside)
+### Alpha
 
-### 📊 Alpha 模块 (Alpha Token Stability)
-实时监控币安 **Alpha 4x 积分代币**，每分钟自动刷新：
-- **波动率分析**：计算 Volatility 与 Spread。
-- **风险评分**：提供 `risk_score` 与 `risk_label`（保守/平衡/激进）。
-- **趋势追踪**：追踪 Alpha 代币的稳定性趋势，识别异常变动。
+- `GET /alpha/stability`
+- `GET /alpha/stability/history`
+- `GET /alpha/stability/ranked`
+- `GET /alpha/stability/trends`
 
-### 💰 理财模块 (Binance Finance & Activity)
-全方位抓取币安理财（Simple Earn）产品与活动公告：
-- **智能排序**：支持按 APR、期限或稳定性排序。
-- **活动评估**：对公告活动进行参与价值评分（Participation Scoring）。
-- **低门槛筛选**：自动识别适合小额资金、无区域限制的高收益机会。
+Alpha outputs include:
 
----
+- `volatility`
+- `spread`
+- `score`
+- `risk_score`
+- `risk_label`
+- `abnormal_flag`
+- `risk_reason`
 
-## 🛠️ 快速开始 (Quick Start)
+### Finance
 
-### Step 0: 安装 OpenClaw 本体
-本技能需要 [OpenClaw](https://github.com/openclaw/openclaw) 框架作为运行宿主。如果你还没有安装 OpenClaw，请先执行：
+- `GET /binance/finance`
+- `GET /binance/finance/activity`
+- `GET /binance/finance/activity/scored`
+- `GET /binance/finance/recommend`
+- `GET /binance/finance/history`
 
-```bash
-# 请参考 OpenClaw 官方文档进行安装
-# 通常为：pip install openclaw  或从源码安装
-```
+Finance outputs include:
 
-### Step 1: 准备工作 (Checklist)
-确保你的电脑已安装以下基础工具：
-- **Python 3.11+** ([下载地址](https://www.python.org/downloads/))
-- **Git** ([下载地址](https://git-scm.com/downloads))
+- `product_id`
+- `source`
+- `recommendation_score`
+- `recommendation_reason`
+- `risk_hint`
+- `redeemable`
 
-### Step 2: 安装本技能 (Install Skill)
-将本技能克隆到 OpenClaw 的默认技能目录：
+Activity outputs include:
 
-```bash
-git clone https://github.com/fadai216/binance-alpha-finance-skill.git ~/.openclaw/skills/binance-alpha-finance
-```
+- `score`
+- `score_label`
+- `reasons`
+- `participation_difficulty`
+- `time_urgency`
+- `complexity_score`
+- `requires_kyc`
+- `requires_holding`
+- `requires_region_eligibility`
+- `requires_trading_volume`
+- `restriction_flags`
+- `low_barrier`
 
-### Step 3: 一键初始化 (Initialize)
-运行初始化脚本，自动配置环境：
+### Copilot
 
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
-```
-> **看到 `Backend is healthy` 字样即表示启动成功！**
+- `GET /binance/copilot/summary`
 
----
+Summary supports:
 
-## 🖥️ 常用指令 (Common Commands)
+- `style=conservative`
+- `style=balanced`
+- `style=aggressive`
 
-| 模块 | 指令示例 | 描述 |
-| :--- | :--- | :--- |
-| **Alpha** | `bash query.sh alpha 'top=3'` | 获取当前最稳的 3 个 Alpha 代币 |
-| **Finance** | `bash query.sh finance 'sort_by=apr&limit=5'` | 找 APR 最高的 5 个理财产品 |
-| **Copilot** | `bash query.sh summary 'style=balanced'` | 生成一份平衡型的投资建议 |
+## Reliability & Operations
 
----
+- Built-in retry and exponential backoff for Binance requests
+- Proxy-aware startup through `config.json`
+- Automatic periodic history pruning in scheduler
+- Manual pruning:
+  - `bash scripts/prune_data.sh`
+- Minimal Alembic scaffolding for future migrations
+- Minimal local debug dashboard:
+  - `http://127.0.0.1:8000/dashboard`
 
-## 🏗️ 架构概览 (Architecture)
-
-<details>
-<summary>点击展开架构图 (Mermaid Diagram)</summary>
-
-```mermaid
-flowchart TD
-    A[OpenClaw Skill] --> B[scripts/ensure_backend.sh]
-    B --> C[FastAPI Backend]
-    C --> D[Alpha Monitor]
-    C --> E[Finance Monitor]
-    D --> F[Binance Alpha APIs]
-    E --> G[Binance Simple Earn APIs]
-    E --> H[Binance CMS Activity APIs]
-    C --> I[SQLite History]
-```
-</details>
-
----
-
-## 📂 项目结构 (Repository Layout)
+## Repository Layout
 
 ```text
 binance-alpha-finance-skill/
-├── backend/          # FastAPI 后端核心逻辑
-├── docs/             # 详细教程与更新日志
-├── examples/         # API 返回示例 (JSON)
-├── scripts/          # 自动化部署与查询脚本
-├── SKILL.md          # OpenClaw 技能定义
-└── config.json       # 服务配置 (Port, URL等)
+├── SKILL.md
+├── README.md
+├── CHANGELOG.md
+├── LICENSE
+├── config.json
+├── apis.json
+├── alembic.ini
+├── .github/workflows/ci.yml
+├── docs/
+│   ├── ALGORITHM.md
+│   ├── OPENCLAW_PROMPTS.zh-CN.md
+│   ├── TUTORIAL.zh-CN.md
+│   └── RELEASE_NOTES_*.md
+├── examples/
+│   ├── alpha-ranked.json
+│   ├── alpha-trends.json
+│   ├── finance-recommend.json
+│   ├── activity-scored.json
+│   └── copilot-summary.json
+├── backend/
+│   ├── alpha_monitor/
+│   ├── finance_monitor/
+│   ├── web3_wallet_monitor/
+│   ├── alembic/
+│   ├── static/
+│   ├── data/
+│   ├── API.md
+│   ├── http_utils.py
+│   ├── prune_data.py
+│   ├── main.py
+│   ├── scheduler.py
+│   ├── requirements.txt
+│   └── requirements-dev.txt
+├── scripts/
+│   ├── ensure_backend.sh
+│   ├── start_api.sh
+│   ├── start_scheduler.sh
+│   ├── prune_data.sh
+│   ├── migrate.sh
+│   ├── query.py
+│   ├── query.sh
+│   ├── generate_examples.py
+│   └── install.sh
+└── tests/
+    ├── conftest.py
+    └── test_api_smoke.py
 ```
 
----
+## Install
 
-## 🔒 安全说明 (Security & Notes)
+### Option A: clone directly into OpenClaw skills
 
-- **API 安全**：配置 API Key 后请务必妥善保管。本项目仅在本地运行，不会上传密钥。
-- **自托管**：所有理财和 Alpha 数据快照均存储在本地 `backend/data` 目录下，不依赖云端。
+```bash
+git clone https://github.com/fadai216/binance-alpha-finance-skill.git ~/.openclaw/skills/binance-alpha-finance
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
+```
 
----
+### Option B: clone anywhere, then install
 
-## 🤝 贡献与致谢
+```bash
+git clone https://github.com/fadai216/binance-alpha-finance-skill.git
+cd binance-alpha-finance-skill
+bash scripts/install.sh
+```
 
-欢迎提交 Issue 或 Pull Request 来完善这个技能！
+## Config
 
-- **Author**: [fadai216](https://github.com/fadai216)
-- **Framework**: [OpenClaw](https://github.com/openclaw/openclaw)
+Edit `config.json` if needed:
 
----
-<p align="center">
-  如果这个项目对你有帮助，欢迎点个 ⭐️ 支持一下！
-</p>
+- `apiBaseUrl`
+- `apiHost`
+- `apiPort`
+- `proxy`
+- `noProxy`
+- `backendRoot`
+- `venvDir`
+- `historyRetentionDays`
+- `autoPruneIntervalHours`
+
+Default local API:
+
+- `http://127.0.0.1:8000`
+
+Optional Binance credentials:
+
+```bash
+export BINANCE_API_KEY="..."
+export BINANCE_API_SECRET="..."
+```
+
+## Common Commands
+
+### Alpha
+
+```bash
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha "top=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history "limit=12"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh ranked "top=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh trends "limit=6"
+```
+
+### Finance
+
+```bash
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance "sort_by=apr&order=desc&product_type=all&limit=5"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance "sort_by=stability&order=desc&redeemable_only=true&limit=5"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity "status=active&reward_type=all&limit=5"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity "status=active&reward_type=all&low_barrier_only=true&max_capital=500&limit=5"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh scored "limit=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh recommend "sort_by=stability&limit=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history "product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh summary "style=balanced"
+```
+
+### Output Modes
+
+```bash
+python scripts/query.py summary "style=balanced" --pretty
+python scripts/query.py summary "style=balanced" --raw
+python scripts/query.py summary "style=balanced" --save
+python scripts/query.py summary "style=balanced" --save ./summary.json
+```
+
+### Maintenance
+
+```bash
+bash scripts/prune_data.sh
+bash scripts/migrate.sh
+python scripts/generate_examples.py
+```
+
+## Testing
+
+```bash
+cd backend
+python -m compileall .
+cd ..
+python -m pytest -q
+```
+
+GitHub Actions CI:
+
+- `.github/workflows/ci.yml`
+
+## Examples
+
+Real sample outputs live in:
+
+- [examples/](./examples/)
+
+Regenerate them:
+
+```bash
+python scripts/generate_examples.py
+```
+
+## Notes
+
+- If port `8000` is occupied but `/health` works, `ensure_backend.sh` treats the backend as healthy.
+- This repository is backend-only and designed primarily for skill usage.
+- Runtime files, sqlite snapshots, caches, and `.venv/` are ignored by `.gitignore`.
+- For API details, see [backend/API.md](./backend/API.md).
+

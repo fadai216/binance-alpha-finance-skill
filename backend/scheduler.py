@@ -88,6 +88,20 @@ def main() -> None:
                 finance_service.note_scheduler_failure(str(exc))
                 logging.exception("finance refresh failed: %s", exc)
 
+        if service.is_prune_due():
+            try:
+                result = service.prune_history()
+                logging.info("alpha prune complete | %s", result)
+            except Exception as exc:  # noqa: BLE001
+                logging.exception("alpha prune failed: %s", exc)
+
+        if finance_service.is_prune_due():
+            try:
+                result = finance_service.prune_history()
+                logging.info("finance prune complete | %s", result)
+            except Exception as exc:  # noqa: BLE001
+                logging.exception("finance prune failed: %s", exc)
+
         if web3_service.is_refresh_due():
             try:
                 web3_snapshot = web3_service.refresh_safe()

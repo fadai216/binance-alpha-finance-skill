@@ -35,6 +35,11 @@ def resolve_api_base_url(config: dict) -> str:
     return str(config["apiBaseUrl"]).rstrip("/")
 
 
+def resolve_proxy(config: dict) -> str | None:
+    proxy = str(config.get("proxy", "")).strip()
+    return proxy or None
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Query the local Binance Alpha / Finance backend"
@@ -98,8 +103,15 @@ def main() -> int:
     if query_pairs:
         url = f"{url}?{urlencode(query_pairs)}"
 
+    proxy = resolve_proxy(config)
+    if proxy and not base_url.startswith("http://127.0.0.1") and not base_url.startswith("http://localhost"):
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+        open_fn = opener.open
+    else:
+        open_fn = urlopen
+
     try:
-        with urlopen(url, timeout=30) as response:
+        with open_fn(url, timeout=30) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except HTTPError as exc:
         body = exc.read().decode("utf-8", "ignore")

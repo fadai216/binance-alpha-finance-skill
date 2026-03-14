@@ -311,6 +311,28 @@ class BinanceFinanceService:
         state["scheduler_state"] = scheduler_state
         save_state(self.settings.finance_cache_file, state)
 
+    def is_prune_due(self) -> bool:
+        state = load_state(self.settings.finance_cache_file)
+        last_prune_at = state.get("last_prune_at")
+        if not last_prune_at:
+            return True
+        try:
+            last_prune = datetime.fromisoformat(last_prune_at)
+        except ValueError:
+            return True
+        return datetime.now(UTC) - last_prune > timedelta(hours=self.settings.auto_prune_interval_hours)
+
+    def prune_history(self, retention_days: int | None = None) -> dict[str, Any]:
+        retention_days = retention_days or self.settings.history_retention_days
+        cutoff = datetime.now(UTC) - timedelta(days=retention_days)
+        result = {"deleted_runs": 0, "retention_days": retention_days}
+        if self.history_store is not None:
+            result.update(self.history_store.prune_before(cutoff.isoformat()))
+        state = load_state(self.settings.finance_cache_file)
+        state["last_prune_at"] = datetime.now(UTC).isoformat()
+        save_state(self.settings.finance_cache_file, state)
+        return result
+
     def is_refresh_due(self) -> bool:
         state = self._load_state()
         latest = state.get("latest_snapshot")

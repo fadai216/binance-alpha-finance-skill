@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Binance Copilot Dashboard</title>
+    <style>
+      body { font-family: sans-serif; margin: 24px; background: #f6f8fb; color: #111827; }
+      h1, h2 { margin-bottom: 8px; }
+      .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+      .card { background: white; border: 1px solid #dbe3ef; padding: 16px; border-radius: 12px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+      .muted { color: #6b7280; font-size: 13px; }
+      .pill { display: inline-block; padding: 2px 8px; border: 1px solid #cbd5e1; border-radius: 999px; font-size: 12px; }
+      pre { white-space: pre-wrap; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h1>Binance Copilot Dashboard</h1>
+    <p class="muted">Minimal local dashboard for debugging the backend.</p>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Alpha Ranked</h2>
+        <div id="alpha-ranked">Loading...</div>
+      </section>
+      <section class="card">
+        <h2>Finance Recommend</h2>
+        <div id="finance-recommend">Loading...</div>
+      </section>
+      <section class="card">
+        <h2>Activity Scored</h2>
+        <div id="activity-scored">Loading...</div>
+      </section>
+      <section class="card">
+        <h2>Copilot Summary</h2>
+        <div id="copilot-summary">Loading...</div>
+      </section>
+    </div>
+
+    <script>
+      async function loadJson(path) {
+        const response = await fetch(path);
+        if (!response.ok) throw new Error(path + " " + response.status);
+        return response.json();
+      }
+
+      function renderTable(rootId, rows, columns) {
+        const root = document.getElementById(rootId);
+        if (!rows.length) {
+          root.innerHTML = "<div class='muted'>No data</div>";
+          return;
+        }
+        const thead = "<thead><tr>" + columns.map((c) => `<th>${c.label}</th>`).join("") + "</tr></thead>";
+        const tbody = "<tbody>" + rows.map((row) => "<tr>" + columns.map((c) => `<td>${c.render(row)}</td>`).join("") + "</tr>").join("") + "</tbody>";
+        root.innerHTML = `<table>${thead}${tbody}</table>`;
+      }
+
+      async function main() {
+        try {
+          const [alpha, finance, activity, summary] = await Promise.all([
+            loadJson("/alpha/stability/ranked?top=5"),
+            loadJson("/binance/finance/recommend?sort_by=stability&limit=5"),
+            loadJson("/binance/finance/activity/scored?limit=5"),
+            loadJson("/binance/copilot/summary?style=balanced")
+          ]);
+
+          renderTable("alpha-ranked", alpha.analysis || [], [
+            { label: "Symbol", render: (row) => row.symbol },
+            { label: "Risk", render: (row) => `${row.risk_label} (${row.risk_score})` },
+            { label: "Reason", render: (row) => row.risk_reason || "" }
+          ]);
+
+          renderTable("finance-recommend", finance.items || [], [
+            { label: "Product", render: (row) => row.product_name },
+            { label: "APR", render: (row) => row.apr },
+            { label: "Score", render: (row) => row.recommendation_score || "" }
+          ]);
+
+          renderTable("activity-scored", activity.items || [], [
+            { label: "Title", render: (row) => row.title },
+            { label: "Score", render: (row) => `${row.score} / ${row.score_label}` },
+            { label: "Barrier", render: (row) => row.low_barrier ? "low" : "normal" }
+          ]);
+
+          document.getElementById("copilot-summary").innerHTML = `
+            <div class="pill">${summary.style}</div>
+            <pre>${summary.summary_text || ""}</pre>
+          `;
+        } catch (error) {
+          document.body.insertAdjacentHTML("beforeend", `<pre>${String(error)}</pre>`);
+        }
+      }
+
+      main();
+    </script>
+  </body>
+</html>

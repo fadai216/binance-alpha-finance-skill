@@ -3,9 +3,13 @@
   "apiBaseUrl": "http://127.0.0.1:8000",
   "apiHost": "127.0.0.1",
   "apiPort": 8000,
+  "proxy": "",
+  "noProxy": "127.0.0.1,localhost,.local",
   "alphaDefaultTop": 6,
   "alphaHistoryDefaultLimit": 12,
   "financeDefaultLimit": 20,
   "financeHistoryDefaultLimit": 12,
+  "historyRetentionDays": 30,
+  "autoPruneIntervalHours": 24,
   "venvDir": "./backend/.venv"
 }

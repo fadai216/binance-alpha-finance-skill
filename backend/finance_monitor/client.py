@@ -6,10 +6,9 @@ from typing import Any
 from urllib.parse import urlencode
 
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 from alpha_monitor.config import Settings
+from http_utils import apply_proxy, request_with_backoff
 
 
 class BinanceFinanceError(RuntimeError):
@@ -20,24 +19,22 @@ class BinanceFinanceClient:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
         self.session = requests.Session()
-        retry = Retry(
-            total=3,
-            backoff_factor=0.5,
-            status_forcelist=(429, 500, 502, 503, 504),
-            allowed_methods=("GET",),
-        )
-        adapter = HTTPAdapter(max_retries=retry)
-        self.session.mount("https://", adapter)
-        self.session.mount("http://", adapter)
         self.session.headers.update(
             {
                 "User-Agent": settings.user_agent,
                 "Accept": "application/json, text/html;q=0.9,*/*;q=0.8",
             }
         )
+        apply_proxy(self.session, settings.outbound_proxy)
 
     def _get_json(self, url: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
-        response = self.session.get(url, params=params, timeout=self.settings.request_timeout)
+        response = request_with_backoff(
+            self.session,
+            "GET",
+            url,
+            params=params,
+            timeout=self.settings.request_timeout,
+        )
         response.raise_for_status()
         payload = response.json()
         if payload.get("success") is False or payload.get("code") not in (None, "000000", "0"):
@@ -55,7 +52,9 @@ class BinanceFinanceClient:
             hashlib.sha256,
         ).hexdigest()
         signed_query = f"{query}&signature={signature}"
-        response = self.session.get(
+        response = request_with_backoff(
+            self.session,
+            "GET",
             f"{self.settings.api_base_url}{path}?{signed_query}",
             headers={"X-MBX-APIKEY": self.settings.binance_api_key},
             timeout=self.settings.request_timeout,
@@ -127,7 +126,9 @@ class BinanceFinanceClient:
         ]
         diagnostics: dict[str, Any] = {"attempts": []}
         for path in candidates:
-            response = self.session.get(
+            response = request_with_backoff(
+                self.session,
+                "GET",
                 f"{self.settings.base_url}{path}",
                 timeout=self.settings.request_timeout,
             )

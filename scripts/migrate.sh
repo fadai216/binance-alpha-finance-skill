@@ -25,31 +25,8 @@ print(venv if venv.startswith("/") else f"{root}/{venv.lstrip('./')}")
 PY
 )"
 
-PROXY_URL="$(python3 - <<'PY' "$CONFIG"
-import json, sys
-with open(sys.argv[1], 'r', encoding='utf-8') as f:
-    print(json.load(f).get("proxy", ""))
-PY
-)"
-
-NO_PROXY_VALUE="$(python3 - <<'PY' "$CONFIG"
-import json, sys
-with open(sys.argv[1], 'r', encoding='utf-8') as f:
-    print(json.load(f).get("noProxy", "127.0.0.1,localhost,.local"))
-PY
-)"
-
-cd "$BACKEND_ROOT"
+cd "$SKILL_ROOT"
 source "$VENV_DIR/bin/activate"
-export NO_PROXY="$NO_PROXY_VALUE"
-export no_proxy="$NO_PROXY_VALUE"
-if [ -n "$PROXY_URL" ]; then
-  export OUTBOUND_PROXY="$PROXY_URL"
-  export HTTP_PROXY="$PROXY_URL"
-  export HTTPS_PROXY="$PROXY_URL"
-  export http_proxy="$PROXY_URL"
-  export https_proxy="$PROXY_URL"
-  export ALL_PROXY="$PROXY_URL"
-  export all_proxy="$PROXY_URL"
-fi
-exec python scheduler.py
+pip install -r "$BACKEND_ROOT/requirements-dev.txt"
+exec alembic upgrade head
+

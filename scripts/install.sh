@@ -14,9 +14,8 @@ if [ -e "$TARGET_DIR" ]; then
 fi
 
 cp -R "$REPO_ROOT" "$TARGET_DIR"
-chmod +x "$TARGET_DIR"/scripts/*.sh "$TARGET_DIR"/scripts/query.py
+chmod +x "$TARGET_DIR"/scripts/*.sh "$TARGET_DIR"/scripts/query.py "$TARGET_DIR"/scripts/generate_examples.py
 
 echo "Installed to: $TARGET_DIR"
 echo "Next step:"
 echo "  bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh"
-

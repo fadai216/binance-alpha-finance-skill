@@ -8,4 +8,4 @@ backend/data/*.sqlite3-shm
 backend/data/*.sqlite3-wal
 .runtime/
 *.pyc
-
+.pytest_cache/

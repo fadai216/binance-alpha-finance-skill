@@ -15,6 +15,7 @@ class FinanceHistoryStore:
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path)
         connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA journal_mode=WAL")
         return connection
 
@@ -273,6 +274,17 @@ class FinanceHistoryStore:
                 )
 
         return [snapshots[run_id] for run_id in ordered_run_ids]
+
+    def prune_before(self, cutoff_iso: str) -> dict[str, int]:
+        with self._connect() as connection:
+            deleted_runs = connection.execute(
+                "DELETE FROM finance_runs WHERE updated_at < ?",
+                (cutoff_iso,),
+            ).rowcount
+            connection.commit()
+        return {
+            "deleted_runs": deleted_runs,
+        }
 
     @staticmethod
     def _build_legacy_product_id(

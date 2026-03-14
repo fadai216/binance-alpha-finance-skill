@@ -15,6 +15,7 @@ class HistoryStore:
     def _connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(self.path)
         connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA journal_mode=WAL")
         return connection
 
@@ -193,6 +194,32 @@ class HistoryStore:
                 )
 
         return [snapshots[run_id] for run_id in ordered_run_ids]
+
+    def prune_before(self, cutoff_iso: str) -> dict[str, int]:
+        with self._connect() as connection:
+            run_ids = [
+                int(row["id"])
+                for row in connection.execute(
+                    "SELECT id FROM runs WHERE updated_at < ?",
+                    (cutoff_iso,),
+                ).fetchall()
+            ]
+            deleted_runs = 0
+            deleted_alerts = 0
+            if run_ids:
+                deleted_runs = connection.execute(
+                    "DELETE FROM runs WHERE updated_at < ?",
+                    (cutoff_iso,),
+                ).rowcount
+            deleted_alerts = connection.execute(
+                "DELETE FROM alert_events WHERE updated_at < ?",
+                (cutoff_iso,),
+            ).rowcount
+            connection.commit()
+        return {
+            "deleted_runs": deleted_runs,
+            "deleted_alert_events": deleted_alerts,
+        }
 
     @staticmethod
     def _extract_symbols(alert_text: str) -> list[str]:

@@ -301,6 +301,28 @@ class AlphaStabilityService:
         state["scheduler_state"] = scheduler_state
         save_state(self.settings.cache_file, state)
 
+    def is_prune_due(self) -> bool:
+        state = load_state(self.settings.cache_file)
+        last_prune_at = state.get("last_prune_at")
+        if not last_prune_at:
+            return True
+        try:
+            last_prune = datetime.fromisoformat(last_prune_at)
+        except ValueError:
+            return True
+        return datetime.now(timezone.utc) - last_prune > timedelta(hours=self.settings.auto_prune_interval_hours)
+
+    def prune_history(self, retention_days: int | None = None) -> dict[str, Any]:
+        retention_days = retention_days or self.settings.history_retention_days
+        cutoff = datetime.now(timezone.utc) - timedelta(days=retention_days)
+        result = {"deleted_runs": 0, "deleted_alert_events": 0, "retention_days": retention_days}
+        if self.history_store is not None:
+            result.update(self.history_store.prune_before(cutoff.isoformat()))
+        state = load_state(self.settings.cache_file)
+        state["last_prune_at"] = datetime.now(timezone.utc).isoformat()
+        save_state(self.settings.cache_file, state)
+        return result
+
     def _compute_volatility(self, klines: list[list[str]]) -> float:
         closes = np.array([float(entry[4]) for entry in klines if len(entry) >= 5], dtype=float)
         closes = closes[closes > 0]

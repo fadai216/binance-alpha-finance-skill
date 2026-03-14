@@ -16,6 +16,7 @@ def default_state() -> dict[str, Any]:
         "latest_report": None,
         "last_refresh_error": None,
         "last_fetch_diagnostics": None,
+        "last_prune_at": None,
         "scheduler_state": {
             "consecutive_failures": 0,
             "last_attempt_at": None,

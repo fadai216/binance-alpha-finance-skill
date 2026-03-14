@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from alpha_monitor.config import get_settings
@@ -18,6 +20,7 @@ service = AlphaStabilityService(settings)
 finance_service = BinanceFinanceService(settings)
 web3_service = Web3WalletService(settings)
 copilot_service = BinanceCopilotService(service, finance_service)
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 app = FastAPI(
     title=settings.app_name,
@@ -542,6 +545,11 @@ def health() -> dict[str, Any]:
             "last_error": (web3_state.get("last_refresh_error") or {}).get("message"),
         },
     }
+
+
+@app.get("/dashboard", tags=["system"], summary="极简调试看板")
+def dashboard() -> FileResponse:
+    return FileResponse(STATIC_DIR / "dashboard.html")
 
 
 @app.get(

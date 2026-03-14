@@ -42,6 +42,26 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/start_api.sh
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
 ```
 
+## Advanced Ops
+
+- 手动清理旧快照：
+
+```bash
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/prune_data.sh
+```
+
+- 运行数据库迁移：
+
+```bash
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/migrate.sh
+```
+
+- 打开极简调试看板：
+
+```text
+http://127.0.0.1:8000/dashboard
+```
+
 ## Core Endpoints
 
 ### Alpha

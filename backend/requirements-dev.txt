@@ -1,0 +1,6 @@
+-r requirements.txt
+alembic>=1.16.0
+httpx>=0.28.0
+pytest>=8.3.0
+sqlalchemy>=2.0.0
+
