@@ -1,81 +1,91 @@
-# binance-alpha-finance-skill
+# 🚀 Binance Alpha & Finance Skill for OpenClaw
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](./backend/requirements.txt)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688.svg)](./backend/main.py)
-[![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-black.svg)](./SKILL.md)
+<p align="center">
+  <img src="https://img.shields.io/badge/Binance-Alpha%20%26%20Finance-F3BA2F?style=for-the-badge&logo=binance&logoColor=white" />
+</p>
 
-Self-hosted OpenClaw skill for:
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=flat-square" alt="License"></a>
+  <a href="./backend/requirements.txt"><img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
+  <a href="./backend/main.py"><img src="https://img.shields.io/badge/FastAPI-Backend-009688.svg?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI"></a>
+  <a href="./SKILL.md"><img src="https://img.shields.io/badge/OpenClaw-Skill-black.svg?style=flat-square" alt="OpenClaw"></a>
+  <a href="https://github.com/fadai216/binance-alpha-finance-skill/stargazers"><img src="https://img.shields.io/github/stars/fadai216/binance-alpha-finance-skill?style=flat-square" alt="Stars"></a>
+</p>
 
-- Binance Alpha 4x points token stability analysis
-- Binance finance product discovery
-- Binance activity discovery
-- finance history snapshots
-- `product_id` based finance history queries
+---
 
-This repository is designed to be cloned directly into `~/.openclaw/skills/` and used locally.
+**Binance Alpha & Finance Skill** 是一个专为 [OpenClaw](https://github.com/openclaw/openclaw) AI Agent 框架设计的自托管插件。它能够自动化监控币安（Binance）的高收益机会、理财产品及 Alpha 积分代币，并提供智能投资建议。
 
-中文教程见：
+[📖 中文教程 (Tutorial)](./docs/TUTORIAL.zh-CN.md) | [🤖 AI 提示词 (Prompts)](./docs/OPENCLAW_PROMPTS.zh-CN.md) | [🆕 更新日志 (Changelog)](./CHANGELOG.md)
 
-- [docs/TUTORIAL.zh-CN.md](./docs/TUTORIAL.zh-CN.md)
-- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)
-- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)
+---
 
-## What This Skill Does
+## 🌟 核心功能 (What's Inside)
 
-### Alpha Module
+### 📊 Alpha 模块 (Alpha Token Stability)
+实时监控币安 **Alpha 4x 积分代币**，每分钟自动刷新：
+- **波动率分析**：计算 Volatility 与 Spread。
+- **风险评分**：提供 `risk_score` 与 `risk_label`（保守/平衡/激进）。
+- **趋势追踪**：追踪 Alpha 代币的稳定性趋势，识别异常变动。
 
-- discovers current Binance Alpha `mulPoint = 4` tokens
-- refreshes every minute
-- computes:
-  - volatility
-  - spread
-  - score
-- returns alerts:
-  - new token alerts
-  - high volatility alerts
-- adds direct risk ranking fields:
-  - `risk_score`
-  - `risk_label`
-  - `abnormal_flag`
-  - `risk_reason`
-- adds trend API:
-  - `/alpha/stability/trends`
+### 💰 理财模块 (Binance Finance & Activity)
+全方位抓取币安理财（Simple Earn）产品与活动公告：
+- **智能排序**：支持按 APR、期限或稳定性排序。
+- **活动评估**：对公告活动进行参与价值评分（Participation Scoring）。
+- **低门槛筛选**：自动识别适合小额资金、无区域限制的高收益机会。
 
-### Finance Module
+### 🤖 智能副驾驶 (Copilot Summary)
+聚合全量数据，生成结构化的投资摘要：
+- **策略适配**：根据用户偏好（保守/平衡/激进）定制建议。
+- **多维度汇总**：整合 Alpha 机会、理财推荐与热门活动。
 
-- fetches Binance finance products
-- fetches Binance activity announcements
-- supports:
-  - APR sorting
-  - term sorting
-  - activity filtering
-  - history snapshots
-  - `product_id` based history lookup
-  - activity participation scoring
-  - low-barrier activity filtering
-  - finance product recommendation scoring
+---
 
-### Copilot Summary
+## 🛠️ 快速开始 (Quick Start)
 
-- aggregates:
-  - Alpha stability and risk trends
-  - finance recommendations
-  - scored activities
-- provides:
-  - `/binance/copilot/summary`
-  - `style=conservative|balanced|aggressive`
+### 1. 安装 (Install)
+将技能直接克隆到 OpenClaw 的技能目录：
 
-### Data Source Strategy
+```bash
+git clone https://github.com/fadai216/binance-alpha-finance-skill.git ~/.openclaw/skills/binance-alpha-finance
+```
 
-- `signed-sapi`
-  - official Binance Simple Earn signed API
-- `activity-derived`
-  - finance products derived from official Binance activity announcements
-- `public-finance-fallback`
-  - fallback/public path when official public finance endpoints are blocked or unavailable
+### 2. 初始化 (Initialize)
+运行一键安装脚本，它将自动创建虚拟环境并安装所有依赖：
 
-## Architecture
+```bash
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
+```
+
+### 3. 配置 (Config)
+*(可选)* 如果需要访问完整的 Simple Earn 产品池，请配置币安 API Key：
+
+```bash
+export BINANCE_API_KEY="your_api_key"
+export BINANCE_API_SECRET="your_api_secret"
+```
+
+---
+
+## 🖥️ 常用指令 (Common Commands)
+
+你可以直接通过命令行与后端交互，或让 OpenClaw 帮你执行：
+
+| 模块 | 指令示例 | 描述 |
+| :--- | :--- | :--- |
+| **Alpha** | `bash query.sh alpha 'top=3'` | 获取当前最值得关注的 Alpha 代币 |
+| **Finance** | `bash query.sh finance 'sort_by=apr&limit=5'` | 按年化收益率排序理财产品 |
+| **Activity** | `bash query.sh activity 'status=active&low_barrier_only=true'` | 筛选低门槛、高收益活动 |
+| **Copilot** | `bash query.sh summary 'style=balanced'` | 生成平衡型投资策略摘要 |
+
+> **提示**: 使用 `python scripts/query.py --pretty` 可获得格式化美观的输出。
+
+---
+
+## 🏗️ 架构概览 (Architecture)
+
+<details>
+<summary>点击展开架构图 (Mermaid Diagram)</summary>
 
 ```mermaid
 flowchart TD
@@ -88,279 +98,40 @@ flowchart TD
     E --> H[Binance CMS Activity APIs]
     C --> I[SQLite History]
 ```
+</details>
 
-## Repository Layout
+---
+
+## 📂 项目结构 (Repository Layout)
 
 ```text
 binance-alpha-finance-skill/
-├── SKILL.md
-├── README.md
-├── CHANGELOG.md
-├── LICENSE
-├── config.json
-├── apis.json
-├── docs/
-│   ├── RELEASE_NOTES_v1.0.0.md
-│   ├── RELEASE_NOTES_v1.1.0.md
-│   ├── RELEASE_NOTES_v1.1.1.md
-│   ├── RELEASE_NOTES_v1.1.2.md
-│   ├── RELEASE_NOTES_v1.1.3.md
-│   ├── OPENCLAW_PROMPTS.zh-CN.md
-│   └── TUTORIAL.zh-CN.md
-├── examples/
-│   ├── alpha-ranked.json
-│   ├── alpha-trends.json
-│   ├── finance-recommend.json
-│   ├── activity-scored.json
-│   └── copilot-summary.json
-├── backend/
-│   ├── alpha_monitor/
-│   ├── finance_monitor/
-│   ├── data/
-│   ├── API.md
-│   ├── main.py
-│   ├── requirements.txt
-│   └── scheduler.py
-└── scripts/
-    ├── ensure_backend.sh
-    ├── generate_examples.py
-    ├── install.sh
-    ├── query.py
-    ├── query.sh
-    ├── start_api.sh
-    └── start_scheduler.sh
+├── backend/          # FastAPI 后端核心逻辑
+├── docs/             # 详细教程与更新日志
+├── examples/         # API 返回示例 (JSON)
+├── scripts/          # 自动化部署与查询脚本
+├── SKILL.md          # OpenClaw 技能定义
+└── config.json       # 服务配置 (Port, URL等)
 ```
 
-## Install
+---
 
-### Option A: clone directly into OpenClaw skills
+## 🔒 安全说明 (Security & Notes)
 
-```bash
-git clone https://github.com/fadai216/binance-alpha-finance-skill.git ~/.openclaw/skills/binance-alpha-finance
-```
+- **API 安全**：请确保 `.env` 或环境变量中的 API Key 不被泄露。本项目不会向除币安官方外的任何地方发送你的密钥。
+- **自托管**：所有数据快照（SQLite）均存储在本地 `backend/data` 目录下。
+- **环境要求**：推荐使用 Python 3.11+ 以获得最佳性能。
 
-Then run:
+---
 
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
-```
+## 🤝 贡献与致谢
 
-### Option B: clone anywhere, then install into OpenClaw
+欢迎提交 Issue 或 Pull Request 来完善这个技能！
 
-```bash
-git clone https://github.com/fadai216/binance-alpha-finance-skill.git
-cd binance-alpha-finance-skill
-bash scripts/install.sh
-```
+- **Author**: [fadai216](https://github.com/fadai216)
+- **Framework**: [OpenClaw](https://github.com/openclaw/openclaw)
 
-## First Run
-
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
-```
-
-This will:
-
-1. create `backend/.venv/`
-2. install dependencies from `backend/requirements.txt`
-3. start FastAPI on `127.0.0.1:8000`
-4. reuse an existing healthy backend if one is already listening on the configured port
-
-## Common Commands
-
-### Alpha
-
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=12'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=6'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=6'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh ranked 'top=3'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh trends 'limit=6'
-```
-
-### Finance
-
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=apr&order=desc&product_type=all&limit=5'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=stability&order=desc&redeemable_only=true&limit=5'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&limit=5'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&low_barrier_only=true&max_capital=500&limit=5'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history 'product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh scored 'limit=3'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh recommend 'sort_by=stability&limit=3'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh summary 'style=balanced'
-```
-
-### Output Modes
-
-```bash
-python scripts/query.py summary 'style=balanced' --pretty
-python scripts/query.py summary 'style=balanced' --raw
-python scripts/query.py summary 'style=balanced' --save
-python scripts/query.py summary 'style=balanced' --save ./summary.json
-```
-
-### Manual Backend Control
-
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/start_api.sh
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/start_scheduler.sh
-```
-
-## API Examples
-
-### `/binance/finance`
-
-```json
-{
-  "items": [
-    {
-      "product_id": "activity:65317d61d1c445f99f73a04c05233dd2",
-      "product_name": "Enjoy Up to 8% APR with RLUSD Flexible Products",
-      "product_type": "activity",
-      "asset": "RLUSD",
-      "apr": 8.0,
-      "term_days": 0,
-      "min_purchase_amount": null,
-      "available_balance": "10,000 RLUSD",
-      "reward_label": "Users who subscribe to RLUSD Flexible Products may enjoy up to 8% APR.",
-      "reward_type": "apr",
-      "source": "activity-derived"
-    }
-  ],
-  "updated_at": "2026-03-14T06:56:46.828619+00:00",
-  "source": "public-finance-fallback+cms-activities+activity-derived-products",
-  "total": 1
-}
-```
-
-### `/binance/finance/history`
-
-```json
-[
-  {
-    "timestamp": "2026-03-14T06:56:46.828619+00:00",
-    "products": [
-      {
-        "product_id": "activity:65317d61d1c445f99f73a04c05233dd2",
-        "product_name": "Enjoy Up to 8% APR with RLUSD Flexible Products",
-        "product_type": "activity",
-        "asset": "RLUSD",
-        "apr": 8.0,
-        "term_days": 0,
-        "source": "activity-derived"
-      }
-    ],
-    "activities": []
-  }
-]
-```
-
-### `/binance/finance/activity/scored`
-
-Returns structured scoring fields:
-
-- `score`
-- `score_label`
-- `reasons`
-- `participation_difficulty`
-- `time_urgency`
-- `complexity_score`
-- `requires_kyc`
-- `requires_holding`
-- `requires_region_eligibility`
-- `requires_trading_volume`
-- `restriction_flags`
-- `low_barrier`
-
-### `/binance/finance/recommend`
-
-Supports:
-
-- `min_apr`
-- `max_term`
-- `redeemable_only`
-- `source`
-- `product_type`
-- `sort_by=apr|term|stability|recommendation`
-
-Additional output fields:
-
-- `recommendation_score`
-- `recommendation_reason`
-- `risk_hint`
-- `redeemable`
-
-### `/alpha/stability/ranked`
-
-Adds:
-
-- `most_stable`
-- `most_risky`
-- `abnormal_symbols`
-
-### `/alpha/stability/trends`
-
-Returns per-symbol trend analysis:
-
-- `risk_delta`
-- `score_delta`
-- `volatility_delta`
-- `spread_delta`
-- `trend_label`
-- `trend_reason`
-- `top_worsening`
-- `top_improving`
-
-### `/binance/copilot/summary`
-
-Returns:
-
-- `top_alpha_opportunity`
-- `top_finance_opportunity`
-- `top_activity_opportunity`
-- `alpha_risk_trends`
-- `overall_highlights`
-- `summary_text`
-
-## Optional Binance API Credentials
-
-If you want the full official Simple Earn product pool instead of fallback/public-derived data, configure:
-
-```bash
-export BINANCE_API_KEY="..."
-export BINANCE_API_SECRET="..."
-```
-
-Then restart the backend.
-
-## Config
-
-Edit `config.json` if needed:
-
-- `apiBaseUrl`
-- `apiHost`
-- `apiPort`
-- `backendRoot`
-- `venvDir`
-
-Default local API:
-
-- `http://127.0.0.1:8000`
-
-## Notes
-
-- If port `8000` is occupied but `/health` returns successfully, `ensure_backend.sh` treats the backend as healthy.
-- This repository is backend-only. No frontend is required for skill usage.
-- Runtime files, local caches, sqlite snapshots, and `.venv/` are ignored by `.gitignore`.
-- For detailed local API behavior, see [backend/API.md](./backend/API.md).
-- Real JSON samples are stored under [examples/](./examples/).
-  Regenerate them with:
-  `python scripts/generate_examples.py`
-
-## OpenClaw Prompt Examples
-
-If you prefer natural language instructions instead of shell commands, see:
-
-- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)
+---
+<p align="center">
+  如果这个项目对你有帮助，欢迎点个 ⭐️ 支持一下！
+</p>
