@@ -1,0 +1,192 @@
+{
+  "style": "balanced",
+  "updated_at": "2026-03-14T09:03:38.023702+00:00",
+  "top_alpha_opportunity": {
+    "symbol": "BTWUSDT",
+    "volatility": 0.0008377765410449181,
+    "spread": 0.00019627560544634748,
+    "score": 0.0005811761668054899,
+    "market_symbol": "ALPHA_778USDT",
+    "chain_name": "BSC",
+    "risk_score": 7.14,
+    "risk_label": "low",
+    "abnormal_flag": false,
+    "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+  },
+  "top_finance_opportunity": {
+    "product_id": "activity:65317d61d1c445f99f73a04c05233dd2",
+    "product_name": "Enjoy Up to 8% APR with RLUSD Flexible Products",
+    "product_type": "activity",
+    "asset": "RLUSD",
+    "apr": 8.0,
+    "term_days": 0,
+    "min_purchase_amount": null,
+    "available_balance": "10,000 RLUSD",
+    "reward_label": "Fellow Binancians, Binance Earn is excited to launch a new campaign for the RLUSD Simple Earn Flexible Products !&nbsp; During the Promotion Period, users who subscribe to RLUSD Flexible Products may enjoy up to 8% APR, which includes an exclusive Bonus Tiered APR on top of Real-Time APR rewards.&nbsp; How to Participate: Promotion Period: 2026-03-13 00:00:00 (UTC) to 2026-03-26 23:59:59 (UTC) Subscription Format: Complete subscription on a first-come, first-served basis in accordance with the terms below. Rewards Distribution: Bonus Tiered APR: Distributed to users’ Spot Accounts on a daily basis.",
+    "reward_type": "apr",
+    "source": "activity-derived",
+    "redeemable": true,
+    "recommendation_score": 78.0,
+    "recommendation_reason": [
+      "APR 较高",
+      "可灵活赎回",
+      "活动派生机会"
+    ],
+    "risk_hint": "medium",
+    "estimated_min_requirement_usd": null
+  },
+  "top_activity_opportunity": {
+    "title": "Binance Earn: Enjoy Up to 8% APR with RLUSD Flexible Products – 10,000 RLUSD Limit Available!",
+    "activity_type": "finance",
+    "participation_condition": "Fellow Binancians, Binance Earn is excited to launch a new campaign for the RLUSD Simple Earn Flexible Products !&nbsp; During the Promotion Period, users who subscribe to RLUSD Flexible Products may enjoy up to 8% APR, which includes an exclusive Bonus Tiered APR on top of Real-Time APR rewards.&nbsp; How to Participate: Promotion Period: 2026-03-13 00:00:00 (UTC) to 2026-03-26 23:59:59 (UTC) Subscription Format: Complete subscription on a first-come, first-served basis in accordance with the terms below. Users can also deposit RLUSD to their Binance accounts.&nbsp; Head to [ Simple Earn ], and search for RLUSD .&nbsp; Select FLEXIBLE, and subscribe to RLUSD Simple Earn Flexible Products to start earning exclusive APR Rewards!",
+    "reward_summary": "Fellow Binancians, Binance Earn is excited to launch a new campaign for the RLUSD Simple Earn Flexible Products !&nbsp; During the Promotion Period, users who subscribe to RLUSD Flexible Products may enjoy up to 8% APR, which includes an exclusive Bonus Tiered APR on top of Real-Time APR rewards.&nbsp; How to Participate: Promotion Period: 2026-03-13 00:00:00 (UTC) to 2026-03-26 23:59:59 (UTC) Subscription Format: Complete subscription on a first-come, first-served basis in accordance with the terms below. Rewards Distribution: Bonus Tiered APR: Distributed to users’ Spot Accounts on a daily basis.",
+    "reward_type": "apr",
+    "status": "active",
+    "article_code": "65317d61d1c445f99f73a04c05233dd2",
+    "publish_date": "2026-03-13T03:00:07.387000+00:00",
+    "end_time": "2026-03-26T00:00:00+00:00",
+    "source": "cms-detail",
+    "score": 43.0,
+    "score_label": "medium",
+    "reasons": [
+      "奖励强度高，APR 突出",
+      "需要完成指定参与动作",
+      "时间相对充足",
+      "未发现明显大资金门槛"
+    ],
+    "participation_difficulty": "medium",
+    "complexity_score": 60.0,
+    "time_urgency": "low",
+    "estimated_min_requirement": null,
+    "estimated_min_requirement_usd": null,
+    "low_barrier": true,
+    "low_barrier_reason": "未发现明显大资金门槛",
+    "requires_kyc": false,
+    "requires_holding": false,
+    "requires_region_eligibility": false,
+    "requires_trading_volume": false,
+    "restriction_flags": []
+  },
+  "alpha_risk_trends": {
+    "updated_at": "2026-03-14T09:03:38.023086+00:00",
+    "window_snapshots": 5,
+    "items": [
+      {
+        "symbol": "UPUSDT",
+        "current_risk_score": 31.95,
+        "current_risk_label": "low",
+        "abnormal_flag": false,
+        "risk_delta": 5.53,
+        "score_delta": 0.000582,
+        "volatility_delta": -1e-06,
+        "spread_delta": 0.001457,
+        "trend_label": "stable",
+        "trend_reason": "波动率回落；价差扩大"
+      },
+      {
+        "symbol": "VELVETUSDT",
+        "current_risk_score": 24.65,
+        "current_risk_label": "low",
+        "abnormal_flag": false,
+        "risk_delta": 2.0,
+        "score_delta": 0.000162,
+        "volatility_delta": 0.00024,
+        "spread_delta": 4.5e-05,
+        "trend_label": "stable",
+        "trend_reason": "波动率抬升；价差扩大"
+      },
+      {
+        "symbol": "LABUSDT",
+        "current_risk_score": 62.4,
+        "current_risk_label": "medium",
+        "abnormal_flag": true,
+        "risk_delta": 0.95,
+        "score_delta": 0.001652,
+        "volatility_delta": 0.000148,
+        "spread_delta": 0.003909,
+        "trend_label": "stable",
+        "trend_reason": "波动率抬升；价差扩大"
+      },
+      {
+        "symbol": "BTWUSDT",
+        "current_risk_score": 7.14,
+        "current_risk_label": "low",
+        "abnormal_flag": false,
+        "risk_delta": -0.25,
+        "score_delta": -2.6e-05,
+        "volatility_delta": -0.0,
+        "spread_delta": -6.5e-05,
+        "trend_label": "stable",
+        "trend_reason": "波动率回落；价差收敛"
+      },
+      {
+        "symbol": "BSBUSDT",
+        "current_risk_score": 10.75,
+        "current_risk_label": "low",
+        "abnormal_flag": false,
+        "risk_delta": -0.16,
+        "score_delta": -1.6e-05,
+        "volatility_delta": -3e-06,
+        "spread_delta": -3.6e-05,
+        "trend_label": "stable",
+        "trend_reason": "波动率回落；价差收敛"
+      },
+      {
+        "symbol": "GUAUSDT",
+        "current_risk_score": 8.72,
+        "current_risk_label": "low",
+        "abnormal_flag": false,
+        "risk_delta": 0.0,
+        "score_delta": 0.0,
+        "volatility_delta": 0.0,
+        "spread_delta": 0.0,
+        "trend_label": "stable",
+        "trend_reason": "波动率抬升"
+      },
+      {
+        "symbol": "SN3USDT",
+        "current_risk_score": 100.0,
+        "current_risk_label": "high",
+        "abnormal_flag": true,
+        "risk_delta": 0.0,
+        "score_delta": 0.000825,
+        "volatility_delta": 0.00014,
+        "spread_delta": 0.001853,
+        "trend_label": "stable",
+        "trend_reason": "波动率抬升；价差扩大"
+      },
+      {
+        "symbol": "LYNUSDT",
+        "current_risk_score": 100.0,
+        "current_risk_label": "high",
+        "abnormal_flag": true,
+        "risk_delta": 0.0,
+        "score_delta": -0.00131,
+        "volatility_delta": -0.000262,
+        "spread_delta": -0.002881,
+        "trend_label": "stable",
+        "trend_reason": "波动率回落；价差收敛"
+      }
+    ],
+    "top_worsening": null,
+    "top_improving": null
+  },
+  "overall_highlights": [
+    {
+      "type": "alpha",
+      "title": "BTWUSDT",
+      "reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+    },
+    {
+      "type": "finance",
+      "title": "Enjoy Up to 8% APR with RLUSD Flexible Products",
+      "reason": "APR 较高, 可灵活赎回, 活动派生机会"
+    },
+    {
+      "type": "activity",
+      "title": "Binance Earn: Enjoy Up to 8% APR with RLUSD Flexible Products – 10,000 RLUSD Limit Available!",
+      "reason": "奖励强度高，APR 突出, 需要完成指定参与动作, 时间相对充足, 未发现明显大资金门槛"
+    }
+  ],
+  "summary_text": "今日 Binance 机会总结（balanced 风格）\nAlpha 方向优先关注 BTWUSDT，当前风险标签 low，原因：波动率相对平稳；盘口价差较小；综合稳定性较好。\n理财方向优先关注 Enjoy Up to 8% APR with RLUSD Flexible Products，APR 8.0%，来源 activity-derived，风险提示 medium。\n活动方向优先关注《Binance Earn: Enjoy Up to 8% APR with RLUSD Flexible Products – 10,000 RLUSD Limit Available!》，评分 43.0，门槛判断 True。\n结果仅供 skill 辅助判断，参与前仍需结合地区资格、KYC 和资金规模复核。"
+}

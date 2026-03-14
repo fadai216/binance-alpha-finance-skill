@@ -1,0 +1,103 @@
+{
+  "analysis": [
+    {
+      "symbol": "BTWUSDT",
+      "volatility": 0.0008377765410449181,
+      "spread": 0.00019627560544634748,
+      "score": 0.0005811761668054899,
+      "market_symbol": "ALPHA_778USDT",
+      "chain_name": "BSC",
+      "error": null,
+      "risk_score": 7.14,
+      "risk_label": "low",
+      "abnormal_flag": false,
+      "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+    },
+    {
+      "symbol": "GUAUSDT",
+      "volatility": 0.0011430985968646126,
+      "spread": 0.0,
+      "score": 0.0006858591581187676,
+      "market_symbol": "ALPHA_483USDT",
+      "chain_name": "BSC",
+      "error": null,
+      "risk_score": 8.72,
+      "risk_label": "low",
+      "abnormal_flag": false,
+      "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+    },
+    {
+      "symbol": "BSBUSDT",
+      "volatility": 0.0013564180017386635,
+      "spread": 0.00010661329158845734,
+      "score": 0.0008564961176785811,
+      "market_symbol": "ALPHA_790USDT",
+      "chain_name": "BSC",
+      "error": null,
+      "risk_score": 10.75,
+      "risk_label": "low",
+      "abnormal_flag": false,
+      "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+    }
+  ],
+  "alerts": [
+    "⚠️ 波动率过高代币: SN3USDT, LYNUSDT"
+  ],
+  "recommendation": "Alpha 4×积分代币稳定性排名（最近1小时）已更新，当前相对更稳的是 BTWUSDT, GUAUSDT, BSBUSDT。\n综合评分最低的是 BTWUSDT，volatility=0.0008，spread=0.0002。\n短线波动偏高的代币有 SN3USDT, LYNUSDT，更适合降低追单权重。\n⚠️ 风险提示：4×积分代币通常上市时间短、深度变化快，低分只代表相对稳定，不代表无滑点或无回撤。",
+  "updated_at": "2026-03-14T09:03:37.171748+00:00",
+  "source": "alpha-api-fallback",
+  "window_minutes": 60,
+  "total_symbols": 8,
+  "last_refresh_error": null,
+  "diagnostics": {
+    "points_page": {
+      "status": "waf_challenge",
+      "status_code": 202,
+      "waf_challenge": true,
+      "waf_action": "challenge",
+      "error": null
+    },
+    "token_list_total": 565,
+    "four_x_total": 8,
+    "exchange_symbol_total": 1039,
+    "page_symbol_count": 0,
+    "page_match_count": 0,
+    "used_cached_discovery": false,
+    "new_symbol_count": 0,
+    "bootstrap_completed": true
+  },
+  "scheduler_state": {
+    "consecutive_failures": 0,
+    "last_attempt_at": null,
+    "last_success_at": null,
+    "last_error": null,
+    "last_error_at": null
+  },
+  "most_stable": {
+    "symbol": "BTWUSDT",
+    "volatility": 0.0008377765410449181,
+    "spread": 0.00019627560544634748,
+    "score": 0.0005811761668054899,
+    "market_symbol": "ALPHA_778USDT",
+    "chain_name": "BSC",
+    "error": null,
+    "risk_score": 7.14,
+    "risk_label": "low",
+    "abnormal_flag": false,
+    "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+  },
+  "most_risky": {
+    "symbol": "BSBUSDT",
+    "volatility": 0.0013564180017386635,
+    "spread": 0.00010661329158845734,
+    "score": 0.0008564961176785811,
+    "market_symbol": "ALPHA_790USDT",
+    "chain_name": "BSC",
+    "error": null,
+    "risk_score": 10.75,
+    "risk_label": "low",
+    "abnormal_flag": false,
+    "risk_reason": "波动率相对平稳；盘口价差较小；综合稳定性较好"
+  },
+  "abnormal_symbols": []
+}

@@ -95,6 +95,7 @@ flowchart TD
 binance-alpha-finance-skill/
 ├── SKILL.md
 ├── README.md
+├── CHANGELOG.md
 ├── LICENSE
 ├── config.json
 ├── apis.json
@@ -103,8 +104,15 @@ binance-alpha-finance-skill/
 │   ├── RELEASE_NOTES_v1.1.0.md
 │   ├── RELEASE_NOTES_v1.1.1.md
 │   ├── RELEASE_NOTES_v1.1.2.md
+│   ├── RELEASE_NOTES_v1.1.3.md
 │   ├── OPENCLAW_PROMPTS.zh-CN.md
 │   └── TUTORIAL.zh-CN.md
+├── examples/
+│   ├── alpha-ranked.json
+│   ├── alpha-trends.json
+│   ├── finance-recommend.json
+│   ├── activity-scored.json
+│   └── copilot-summary.json
 ├── backend/
 │   ├── alpha_monitor/
 │   ├── finance_monitor/
@@ -115,6 +123,7 @@ binance-alpha-finance-skill/
 │   └── scheduler.py
 └── scripts/
     ├── ensure_backend.sh
+    ├── generate_examples.py
     ├── install.sh
     ├── query.py
     ├── query.sh
@@ -181,6 +190,15 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history '
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh scored 'limit=3'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh recommend 'sort_by=stability&limit=3'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh summary 'style=balanced'
+```
+
+### Output Modes
+
+```bash
+python scripts/query.py summary 'style=balanced' --pretty
+python scripts/query.py summary 'style=balanced' --raw
+python scripts/query.py summary 'style=balanced' --save
+python scripts/query.py summary 'style=balanced' --save ./summary.json
 ```
 
 ### Manual Backend Control
@@ -337,6 +355,9 @@ Default local API:
 - This repository is backend-only. No frontend is required for skill usage.
 - Runtime files, local caches, sqlite snapshots, and `.venv/` are ignored by `.gitignore`.
 - For detailed local API behavior, see [backend/API.md](./backend/API.md).
+- Real JSON samples are stored under [examples/](./examples/).
+  Regenerate them with:
+  `python scripts/generate_examples.py`
 
 ## OpenClaw Prompt Examples
 

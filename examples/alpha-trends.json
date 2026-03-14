@@ -1,0 +1,104 @@
+{
+  "updated_at": "2026-03-14T09:03:38.015617+00:00",
+  "window_snapshots": 5,
+  "items": [
+    {
+      "symbol": "UPUSDT",
+      "current_risk_score": 31.95,
+      "current_risk_label": "low",
+      "abnormal_flag": false,
+      "risk_delta": 5.53,
+      "score_delta": 0.000582,
+      "volatility_delta": -1e-06,
+      "spread_delta": 0.001457,
+      "trend_label": "stable",
+      "trend_reason": "波动率回落；价差扩大"
+    },
+    {
+      "symbol": "VELVETUSDT",
+      "current_risk_score": 24.65,
+      "current_risk_label": "low",
+      "abnormal_flag": false,
+      "risk_delta": 2.0,
+      "score_delta": 0.000162,
+      "volatility_delta": 0.00024,
+      "spread_delta": 4.5e-05,
+      "trend_label": "stable",
+      "trend_reason": "波动率抬升；价差扩大"
+    },
+    {
+      "symbol": "LABUSDT",
+      "current_risk_score": 62.4,
+      "current_risk_label": "medium",
+      "abnormal_flag": true,
+      "risk_delta": 0.95,
+      "score_delta": 0.001652,
+      "volatility_delta": 0.000148,
+      "spread_delta": 0.003909,
+      "trend_label": "stable",
+      "trend_reason": "波动率抬升；价差扩大"
+    },
+    {
+      "symbol": "BTWUSDT",
+      "current_risk_score": 7.14,
+      "current_risk_label": "low",
+      "abnormal_flag": false,
+      "risk_delta": -0.25,
+      "score_delta": -2.6e-05,
+      "volatility_delta": -0.0,
+      "spread_delta": -6.5e-05,
+      "trend_label": "stable",
+      "trend_reason": "波动率回落；价差收敛"
+    },
+    {
+      "symbol": "BSBUSDT",
+      "current_risk_score": 10.75,
+      "current_risk_label": "low",
+      "abnormal_flag": false,
+      "risk_delta": -0.16,
+      "score_delta": -1.6e-05,
+      "volatility_delta": -3e-06,
+      "spread_delta": -3.6e-05,
+      "trend_label": "stable",
+      "trend_reason": "波动率回落；价差收敛"
+    },
+    {
+      "symbol": "GUAUSDT",
+      "current_risk_score": 8.72,
+      "current_risk_label": "low",
+      "abnormal_flag": false,
+      "risk_delta": 0.0,
+      "score_delta": 0.0,
+      "volatility_delta": 0.0,
+      "spread_delta": 0.0,
+      "trend_label": "stable",
+      "trend_reason": "波动率抬升"
+    },
+    {
+      "symbol": "SN3USDT",
+      "current_risk_score": 100.0,
+      "current_risk_label": "high",
+      "abnormal_flag": true,
+      "risk_delta": 0.0,
+      "score_delta": 0.000825,
+      "volatility_delta": 0.00014,
+      "spread_delta": 0.001853,
+      "trend_label": "stable",
+      "trend_reason": "波动率抬升；价差扩大"
+    },
+    {
+      "symbol": "LYNUSDT",
+      "current_risk_score": 100.0,
+      "current_risk_label": "high",
+      "abnormal_flag": true,
+      "risk_delta": 0.0,
+      "score_delta": -0.00131,
+      "volatility_delta": -0.000262,
+      "spread_delta": -0.002881,
+      "trend_label": "stable",
+      "trend_reason": "波动率回落；价差收敛"
+    }
+  ],
+  "top_worsening": null,
+  "top_improving": null
+}

@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "product_id": "activity:65317d61d1c445f99f73a04c05233dd2",
+      "product_name": "Enjoy Up to 8% APR with RLUSD Flexible Products",
+      "product_type": "activity",
+      "asset": "RLUSD",
+      "apr": 8.0,
+      "term_days": 0,
+      "min_purchase_amount": null,
+      "available_balance": "10,000 RLUSD",
+      "reward_label": "Fellow Binancians, Binance Earn is excited to launch a new campaign for the RLUSD Simple Earn Flexible Products !&nbsp; During the Promotion Period, users who subscribe to RLUSD Flexible Products may enjoy up to 8% APR, which includes an exclusive Bonus Tiered APR on top of Real-Time APR rewards.&nbsp; How to Participate: Promotion Period: 2026-03-13 00:00:00 (UTC) to 2026-03-26 23:59:59 (UTC) Subscription Format: Complete subscription on a first-come, first-served basis in accordance with the terms below. Rewards Distribution: Bonus Tiered APR: Distributed to users’ Spot Accounts on a daily basis.",
+      "reward_type": "apr",
+      "source": "activity-derived",
+      "redeemable": true,
+      "recommendation_score": 78.0,
+      "recommendation_reason": [
+        "APR 较高",
+        "可灵活赎回",
+        "活动派生机会"
+      ],
+      "risk_hint": "medium",
+      "estimated_min_requirement_usd": null
+    },
+    {
+      "product_id": "activity:611bfd0165cc46cb89e06a6549ce2ccf",
+      "product_name": "Share 10 Million SHELL Rewards and Enjoy Up to 1.5% APR with ETH Flexible Products!",
+      "product_type": "activity",
+      "asset": "ETH",
+      "apr": 1.5,
+      "term_days": 0,
+      "min_purchase_amount": "0.2 ETH",
+      "available_balance": null,
+      "reward_label": "All eligible ETH holders who make new subscriptions to ETH Flexible Products during the Promotion Period will have a chance to share 10 millions SHELL rewards .&nbsp; In addition, eligible users who subscribe to ETH Flexible Products can enjoy up to 1.5% APR , which includes an exclusive 0.1% Bonus Tiered APR on top of the Real-Time APR rewards.&nbsp; Promotion A: Binance Earn Monthly Leaderboard - Subscribe to ETH Flexible Products to Share 10 Million SHELL Rewards Promotion Period: 2026-03-11 00:00 (UTC) to 2026-04-09 23:59 (UTC) All users who confirm their participation and make new net subscriptions* to ETH Flexible Products with at least 0.2 ETH during the Promotion Period can participate in Promotion A.&nbsp; Eligible users will then be ranked by ETH Score** during the Promotion Period. Eligible participants will qualify to share 10 million SHELL rewards , where the top user can receive 600,000 SHELL , as per the table below.",
+      "reward_type": "apr",
+      "source": "activity-derived",
+      "redeemable": true,
+      "recommendation_score": 60.0,
+      "recommendation_reason": [
+        "APR 可接受",
+        "可灵活赎回",
+        "活动派生机会",
+        "风险相对低"
+      ],
+      "risk_hint": "low",
+      "estimated_min_requirement_usd": null
+    }
+  ],
+  "updated_at": "2026-03-14T08:59:48.982433+00:00",
+  "source": "public-finance-fallback+cms-activities+activity-derived-products",
+  "total": 2,
+  "last_refresh_error": null,
+  "diagnostics": {
+    "products": {
+      "public_bapi_probe": {
+        "attempts": [
+          {
+            "path": "/bapi/finance/v1/public/simple-earn/flexible/list",
+            "status_code": 403,
+            "waf_challenge": true
+          },
+          {
+            "path": "/bapi/finance/v1/public/simple-earn/locked/list",
+            "status_code": 403,
+            "waf_challenge": true
+          },
+          {
+            "path": "/bapi/simple-earn/v1/public/simple-earn/flexible/list",
+            "status_code": 403,
+            "waf_challenge": true
+          },
+          {
+            "path": "/bapi/simple-earn/v1/public/simple-earn/locked/list",
+            "status_code": 403,
+            "waf_challenge": true
+          }
+        ]
+      }
+    },
+    "activities": {
+      "article_count": 10,
+      "detail_count": 10
+    }
+  },
+  "scheduler_state": {
+    "consecutive_failures": 0,
+    "last_attempt_at": null,
+    "last_success_at": null,
+    "last_error": null,
+    "last_error_at": null
+  }
+}

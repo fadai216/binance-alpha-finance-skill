@@ -185,6 +185,15 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh recommend "sort_b
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh summary "style=balanced"
 ```
 
+## CLI Output Modes
+
+```bash
+python ~/.openclaw/skills/binance-alpha-finance/scripts/query.py summary "style=balanced" --pretty
+python ~/.openclaw/skills/binance-alpha-finance/scripts/query.py summary "style=balanced" --raw
+python ~/.openclaw/skills/binance-alpha-finance/scripts/query.py summary "style=balanced" --save
+python ~/.openclaw/skills/binance-alpha-finance/scripts/query.py summary "style=balanced" --save ./summary.json
+```
+
 ## Portability
 
 别人可以直接从 GitHub 下载这个 skill 后本地使用，前提是：
