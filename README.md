@@ -98,6 +98,8 @@ binance-alpha-finance-skill/
 ├── apis.json
 ├── docs/
 │   ├── RELEASE_NOTES_v1.0.0.md
+│   ├── RELEASE_NOTES_v1.1.0.md
+│   ├── RELEASE_NOTES_v1.1.1.md
 │   └── TUTORIAL.zh-CN.md
 ├── backend/
 │   ├── alpha_monitor/
@@ -158,7 +160,8 @@ This will:
 ```bash
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=12'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=6'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=6'
 ```
 
 ### Finance

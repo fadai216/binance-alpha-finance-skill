@@ -27,6 +27,30 @@
       ]
     },
     {
+      "name": "alpha_stability_ranked",
+      "method": "GET",
+      "path": "/alpha/stability/ranked",
+      "params": [
+        {
+          "name": "top",
+          "required": false,
+          "example": "6"
+        }
+      ]
+    },
+    {
+      "name": "alpha_stability_trends",
+      "method": "GET",
+      "path": "/alpha/stability/trends",
+      "params": [
+        {
+          "name": "limit",
+          "required": false,
+          "example": "12"
+        }
+      ]
+    },
+    {
       "name": "binance_finance",
       "method": "GET",
       "path": "/binance/finance",
@@ -45,6 +69,26 @@
           "name": "product_type",
           "required": false,
           "example": "all"
+        },
+        {
+          "name": "min_apr",
+          "required": false,
+          "example": "4"
+        },
+        {
+          "name": "max_term",
+          "required": false,
+          "example": "30"
+        },
+        {
+          "name": "redeemable_only",
+          "required": false,
+          "example": "true"
+        },
+        {
+          "name": "source",
+          "required": false,
+          "example": "signed-sapi"
         },
         {
           "name": "limit",
@@ -67,6 +111,105 @@
           "name": "reward_type",
           "required": false,
           "example": "all"
+        },
+        {
+          "name": "max_capital",
+          "required": false,
+          "example": "500"
+        },
+        {
+          "name": "low_barrier_only",
+          "required": false,
+          "example": "true"
+        },
+        {
+          "name": "active_only",
+          "required": false,
+          "example": "true"
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "example": "20"
+        }
+      ]
+    },
+    {
+      "name": "binance_finance_activity_scored",
+      "method": "GET",
+      "path": "/binance/finance/activity/scored",
+      "params": [
+        {
+          "name": "status",
+          "required": false,
+          "example": "active"
+        },
+        {
+          "name": "reward_type",
+          "required": false,
+          "example": "all"
+        },
+        {
+          "name": "max_capital",
+          "required": false,
+          "example": "500"
+        },
+        {
+          "name": "low_barrier_only",
+          "required": false,
+          "example": "true"
+        },
+        {
+          "name": "active_only",
+          "required": false,
+          "example": "true"
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "example": "20"
+        }
+      ]
+    },
+    {
+      "name": "binance_finance_recommend",
+      "method": "GET",
+      "path": "/binance/finance/recommend",
+      "params": [
+        {
+          "name": "min_apr",
+          "required": false,
+          "example": "4"
+        },
+        {
+          "name": "max_term",
+          "required": false,
+          "example": "30"
+        },
+        {
+          "name": "redeemable_only",
+          "required": false,
+          "example": "true"
+        },
+        {
+          "name": "source",
+          "required": false,
+          "example": "signed-sapi"
+        },
+        {
+          "name": "product_type",
+          "required": false,
+          "example": "all"
+        },
+        {
+          "name": "sort_by",
+          "required": false,
+          "example": "stability"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "example": "desc"
         },
         {
           "name": "limit",
@@ -96,7 +239,18 @@
           "example": "12"
         }
       ]
+    },
+    {
+      "name": "binance_copilot_summary",
+      "method": "GET",
+      "path": "/binance/copilot/summary",
+      "params": [
+        {
+          "name": "style",
+          "required": false,
+          "example": "balanced"
+        }
+      ]
     }
   ]
 }
-
