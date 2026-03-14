@@ -63,10 +63,30 @@ nohup /bin/zsh -lc "cd '$BACKEND_ROOT' && source '$VENV_DIR/bin/activate' && uvi
 for _ in 1 2 3 4 5 6 7 8 9 10; do
   if curl -fsS "$HEALTH_URL" >/dev/null 2>&1; then
     echo "API started and healthy on ${API_HOST}:${API_PORT}"
-    exit 0
+    break
   fi
   sleep 1
 done
 
-echo "Failed to start API. Check $RUNTIME_DIR/skill-api.log" >&2
-exit 1
+if ! curl -fsS "$HEALTH_URL" >/dev/null 2>&1; then
+  echo "Failed to start API. Check $RUNTIME_DIR/skill-api.log" >&2
+  exit 1
+fi
+
+SCHEDULER_PID_FILE="$RUNTIME_DIR/skill-scheduler.pid"
+SCHEDULER_LOG="$RUNTIME_DIR/skill-scheduler.log"
+
+if [ -f "$SCHEDULER_PID_FILE" ]; then
+  SCHEDULER_PID=$(cat "$SCHEDULER_PID_FILE")
+  if kill -0 "$SCHEDULER_PID" 2>/dev/null; then
+    echo "Scheduler already running (pid=$SCHEDULER_PID)"
+    exit 0
+  else
+    rm -f "$SCHEDULER_PID_FILE"
+  fi
+fi
+
+nohup /bin/zsh -lc "cd '$BACKEND_ROOT' && source '$VENV_DIR/bin/activate' && python scheduler.py" > "$SCHEDULER_LOG" 2>&1 &
+echo $! > "$SCHEDULER_PID_FILE"
+echo "Scheduler started (pid=$(cat "$SCHEDULER_PID_FILE"))"
+exit 0

@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+import json
+import os
 from datetime import datetime, timezone
 from typing import Any
 
 from alpha_monitor.service import AlphaStabilityService
 from finance_monitor.service import BinanceFinanceService
+
+try:
+    import anthropic as _anthropic
+    _ANTHROPIC_AVAILABLE = True
+except ImportError:
+    _ANTHROPIC_AVAILABLE = False
 
 
 class BinanceCopilotService:
@@ -15,6 +23,11 @@ class BinanceCopilotService:
     ) -> None:
         self.alpha_service = alpha_service
         self.finance_service = finance_service
+        self._llm: Any = None
+        if _ANTHROPIC_AVAILABLE:
+            api_key = os.getenv("ANTHROPIC_API_KEY", "")
+            if api_key:
+                self._llm = _anthropic.Anthropic(api_key=api_key)
 
     def build_summary(self, style: str = "balanced") -> dict[str, Any]:
         alpha_report = self.alpha_service.get_ranked_report(top=6)
@@ -123,8 +136,49 @@ class BinanceCopilotService:
             )
         return highlights
 
-    @staticmethod
     def _build_summary_text(
+        self,
+        style: str,
+        top_alpha: dict[str, Any] | None,
+        top_finance: dict[str, Any] | None,
+        top_activity: dict[str, Any] | None,
+        alpha_trends: dict[str, Any],
+    ) -> str:
+        if self._llm is not None:
+            try:
+                return self._llm_summary(style, top_alpha, top_finance, top_activity, alpha_trends)
+            except Exception:  # noqa: BLE001
+                pass
+        return self._template_summary(style, top_alpha, top_finance, top_activity, alpha_trends)
+
+    def _llm_summary(
+        self,
+        style: str,
+        top_alpha: dict[str, Any] | None,
+        top_finance: dict[str, Any] | None,
+        top_activity: dict[str, Any] | None,
+        alpha_trends: dict[str, Any],
+    ) -> str:
+        data = {
+            "style": style,
+            "top_alpha": top_alpha,
+            "top_finance": top_finance,
+            "top_activity": top_activity,
+            "top_worsening": alpha_trends.get("top_worsening"),
+        }
+        prompt = (
+            f"你是 Binance 理财助手，请根据以下实时数据，用简洁中文生成今日机会总结（3-5句，风格：{style}）。"
+            f"不要重复字段名，直接给出可操作建议。数据：\n{json.dumps(data, ensure_ascii=False, default=str)}"
+        )
+        message = self._llm.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return message.content[0].text.strip()
+
+    @staticmethod
+    def _template_summary(
         style: str,
         top_alpha: dict[str, Any] | None,
         top_finance: dict[str, Any] | None,

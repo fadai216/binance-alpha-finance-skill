@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import time as _time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -11,12 +12,28 @@ from finance_monitor.client import BinanceFinanceClient, BinanceFinanceError
 from finance_monitor.history_store import FinanceHistoryStore
 from finance_monitor.storage import load_state, save_state
 
+_STATE_CACHE_TTL = 20.0  # seconds
+
 
 class BinanceFinanceService:
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
         self.client = BinanceFinanceClient(self.settings)
         self.history_store = FinanceHistoryStore(self.settings.sqlite_file) if self.settings.enable_sqlite_persistence else None
+        self._state_cache: dict[str, Any] | None = None
+        self._state_cache_at: float = 0.0
+
+    def _load_state(self) -> dict[str, Any]:
+        now = _time.monotonic()
+        if self._state_cache is not None and (now - self._state_cache_at) < _STATE_CACHE_TTL:
+            return self._state_cache
+        state = load_state(self.settings.finance_cache_file)
+        self._state_cache = state
+        self._state_cache_at = now
+        return state
+
+    def _invalidate_state_cache(self) -> None:
+        self._state_cache = None
 
     def refresh(self) -> dict[str, Any]:
         state = load_state(self.settings.finance_cache_file)
@@ -295,19 +312,21 @@ class BinanceFinanceService:
         save_state(self.settings.finance_cache_file, state)
 
     def is_refresh_due(self) -> bool:
-        state = load_state(self.settings.finance_cache_file)
+        state = self._load_state()
         latest = state.get("latest_snapshot")
         return self._is_stale((latest or {}).get("updated_at"))
 
     def _get_latest_snapshot(self) -> tuple[dict[str, Any], dict[str, Any]]:
-        state = load_state(self.settings.finance_cache_file)
+        state = self._load_state()
         latest = state.get("latest_snapshot")
         if not latest or self._is_stale(latest.get("updated_at")):
             try:
                 latest = self.refresh_safe()
-                state = load_state(self.settings.finance_cache_file)
+                self._invalidate_state_cache()
+                state = self._load_state()
             except Exception:
-                state = load_state(self.settings.finance_cache_file)
+                self._invalidate_state_cache()
+                state = self._load_state()
                 latest = state.get("latest_snapshot")
                 if not latest:
                     raise

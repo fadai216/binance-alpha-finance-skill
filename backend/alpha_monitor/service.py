@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time as _time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -11,12 +12,28 @@ from .config import Settings, get_settings
 from .history_store import HistoryStore
 from .storage import load_state, save_state
 
+_STATE_CACHE_TTL = 20.0  # seconds
+
 
 class AlphaStabilityService:
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or get_settings()
         self.client = BinanceAlphaClient(self.settings)
         self.history_store = HistoryStore(self.settings.sqlite_file) if self.settings.enable_sqlite_persistence else None
+        self._state_cache: dict[str, Any] | None = None
+        self._state_cache_at: float = 0.0
+
+    def _load_state(self) -> dict[str, Any]:
+        now = _time.monotonic()
+        if self._state_cache is not None and (now - self._state_cache_at) < _STATE_CACHE_TTL:
+            return self._state_cache
+        state = load_state(self.settings.cache_file)
+        self._state_cache = state
+        self._state_cache_at = now
+        return state
+
+    def _invalidate_state_cache(self) -> None:
+        self._state_cache = None
 
     def refresh(self) -> dict[str, Any]:
         state = load_state(self.settings.cache_file)
@@ -110,15 +127,17 @@ class AlphaStabilityService:
 
     def get_report(self, top: int | None = None) -> dict[str, Any]:
         top = top or self.settings.default_top
-        state = load_state(self.settings.cache_file)
+        state = self._load_state()
         latest_report = state.get("latest_report")
 
         if not latest_report or self._is_stale(latest_report.get("updated_at")):
             try:
                 latest_report = self.refresh_safe()
-                state = load_state(self.settings.cache_file)
+                self._invalidate_state_cache()
+                state = self._load_state()
             except Exception:
-                state = load_state(self.settings.cache_file)
+                self._invalidate_state_cache()
+                state = self._load_state()
                 latest_report = state.get("latest_report")
                 if not latest_report:
                     raise
