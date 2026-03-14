@@ -1,18 +1,15 @@
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime, timezone
 from typing import Any
+
+import requests as _requests
 
 from alpha_monitor.service import AlphaStabilityService
 from finance_monitor.service import BinanceFinanceService
 
-try:
-    import anthropic as _anthropic
-    _ANTHROPIC_AVAILABLE = True
-except ImportError:
-    _ANTHROPIC_AVAILABLE = False
+_DEFAULT_BASE_URL = "https://api.anthropic.com"
 
 
 class BinanceCopilotService:
@@ -23,11 +20,11 @@ class BinanceCopilotService:
     ) -> None:
         self.alpha_service = alpha_service
         self.finance_service = finance_service
-        self._llm: Any = None
-        if _ANTHROPIC_AVAILABLE:
-            api_key = os.getenv("ANTHROPIC_API_KEY", "")
-            if api_key:
-                self._llm = _anthropic.Anthropic(api_key=api_key)
+        self._llm_model: str = alpha_service.settings.anthropic_model
+        self._llm_api_key: str = alpha_service.settings.anthropic_api_key
+        base = alpha_service.settings.anthropic_base_url.rstrip("/") or _DEFAULT_BASE_URL
+        self._llm_url: str = f"{base}/v1/messages"
+        self._llm_enabled: bool = bool(self._llm_api_key)
 
     def build_summary(self, style: str = "balanced") -> dict[str, Any]:
         alpha_report = self.alpha_service.get_ranked_report(top=6)
@@ -144,7 +141,7 @@ class BinanceCopilotService:
         top_activity: dict[str, Any] | None,
         alpha_trends: dict[str, Any],
     ) -> str:
-        if self._llm is not None:
+        if self._llm_enabled:
             try:
                 return self._llm_summary(style, top_alpha, top_finance, top_activity, alpha_trends)
             except Exception:  # noqa: BLE001
@@ -170,12 +167,22 @@ class BinanceCopilotService:
             f"你是 Binance 理财助手，请根据以下实时数据，用简洁中文生成今日机会总结（3-5句，风格：{style}）。"
             f"不要重复字段名，直接给出可操作建议。数据：\n{json.dumps(data, ensure_ascii=False, default=str)}"
         )
-        message = self._llm.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=300,
-            messages=[{"role": "user", "content": prompt}],
+        resp = _requests.post(
+            self._llm_url,
+            headers={
+                "x-api-key": self._llm_api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": self._llm_model,
+                "max_tokens": 400,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=30,
         )
-        return message.content[0].text.strip()
+        resp.raise_for_status()
+        return resp.json()["content"][0]["text"].strip()
 
     @staticmethod
     def _template_summary(
