@@ -8,6 +8,7 @@ from alpha_monitor.storage import load_state
 from alpha_monitor.config import get_settings
 from alpha_monitor.service import AlphaStabilityService
 from finance_monitor.service import BinanceFinanceService
+from web3_wallet_monitor.service import Web3WalletService
 
 
 logging.basicConfig(
@@ -22,6 +23,7 @@ def main() -> None:
     settings = get_settings()
     service = AlphaStabilityService(settings)
     finance_service = BinanceFinanceService(settings)
+    web3_service = Web3WalletService(settings)
     interval = settings.refresh_interval_seconds
     logging.info("scheduler started, refresh interval=%ss", interval)
 
@@ -85,6 +87,17 @@ def main() -> None:
             except Exception as exc:  # noqa: BLE001
                 finance_service.note_scheduler_failure(str(exc))
                 logging.exception("finance refresh failed: %s", exc)
+
+        if web3_service.is_refresh_due():
+            try:
+                web3_snapshot = web3_service.refresh_safe()
+                logging.info(
+                    "web3 refresh complete | pools=%s | updated_at=%s",
+                    web3_snapshot["total"],
+                    web3_snapshot["updated_at"],
+                )
+            except Exception as exc:  # noqa: BLE001
+                logging.exception("web3 refresh failed: %s", exc)
 
         backoff = min(interval * (2 ** alpha_consecutive_failures), _MAX_BACKOFF_SECONDS)
         sleep_for = max(0, backoff - (time.time() - started_at))

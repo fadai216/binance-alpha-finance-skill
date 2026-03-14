@@ -63,6 +63,10 @@ class Settings:
         return self.data_dir / "binance_finance_cache.json"
 
     @property
+    def web3_wallet_cache_file(self) -> Path:
+        return self.data_dir / "web3_wallet_cache.json"
+
+    @property
     def sqlite_file(self) -> Path:
         return self.data_dir / "alpha_stability_history.sqlite3"
 

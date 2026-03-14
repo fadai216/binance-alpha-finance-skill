@@ -10,11 +10,13 @@ from alpha_monitor.config import get_settings
 from alpha_monitor.service import AlphaStabilityService
 from copilot_service import BinanceCopilotService
 from finance_monitor.service import BinanceFinanceService
+from web3_wallet_monitor.service import Web3WalletService
 
 
 settings = get_settings()
 service = AlphaStabilityService(settings)
 finance_service = BinanceFinanceService(settings)
+web3_service = Web3WalletService(settings)
 copilot_service = BinanceCopilotService(service, finance_service)
 
 app = FastAPI(
@@ -32,6 +34,7 @@ app = FastAPI(
         {"name": "system", "description": "健康检查与系统状态"},
         {"name": "alpha", "description": "Alpha 4×积分代币稳定性分析"},
         {"name": "finance", "description": "币安理财产品与活动"},
+        {"name": "web3", "description": "币安 Web3 钱包 DeFi 理财池"},
     ],
 )
 app.add_middleware(
@@ -506,12 +509,15 @@ EXAMPLE_ALPHA_TREND_RESPONSE = {
 def health() -> dict[str, Any]:
     from alpha_monitor.storage import load_state as _load_alpha_state
     from finance_monitor.storage import load_state as _load_finance_state
+    from web3_wallet_monitor.storage import load_state as _load_web3_state
 
     alpha_state = _load_alpha_state(settings.cache_file)
     finance_state = _load_finance_state(settings.finance_cache_file)
+    web3_state = _load_web3_state(settings.web3_wallet_cache_file)
 
     alpha_report = alpha_state.get("latest_report")
     finance_snapshot = finance_state.get("latest_snapshot")
+    web3_snapshot = web3_state.get("latest_snapshot")
     alpha_scheduler = alpha_state.get("scheduler_state") or {}
     finance_scheduler = finance_state.get("scheduler_state") or {}
 
@@ -528,6 +534,12 @@ def health() -> dict[str, Any]:
             "source": finance_snapshot.get("source") if finance_snapshot else None,
             "consecutive_failures": finance_scheduler.get("consecutive_failures", 0),
             "last_error": finance_scheduler.get("last_error"),
+        },
+        "web3": {
+            "updated_at": web3_snapshot.get("updated_at") if web3_snapshot else None,
+            "source": web3_snapshot.get("source") if web3_snapshot else None,
+            "total_pools": web3_snapshot.get("total") if web3_snapshot else None,
+            "last_error": (web3_state.get("last_refresh_error") or {}).get("message"),
         },
     }
 
@@ -735,6 +747,97 @@ def get_binance_finance_history(
     if product_id or symbol:
         return finance_service.get_history_for_product(product_id=product_id, symbol=symbol, limit=limit)
     return finance_service.get_history(limit=limit)
+
+
+class Web3EarnPoolItem(BaseModel):
+    pool_id: str
+    symbol: str
+    protocol: str
+    network: str
+    chain_id: str | None = None
+    apy: float
+    tvl_usd: float
+    token_type: str
+    contract_address: str
+    ctoken_symbol: str
+    pool_type: str
+    score: float
+    score_label: str
+
+
+class Web3EarnResponse(BaseModel):
+    items: list[Web3EarnPoolItem]
+    total: int
+    updated_at: str
+    source: str | None = None
+    top_apy_stable: Web3EarnPoolItem | None = None
+    top_apy_volatile: Web3EarnPoolItem | None = None
+    top_tvl: Web3EarnPoolItem | None = None
+    protocol_summary: dict[str, Any]
+    last_refresh_error: RefreshError | None = None
+
+
+EXAMPLE_WEB3_EARN_RESPONSE = {
+    "items": [
+        {
+            "pool_id": "ETH-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48-1",
+            "symbol": "USDC",
+            "protocol": "Aave",
+            "network": "ETH",
+            "chain_id": "1",
+            "apy": 4.52,
+            "tvl_usd": 125000000.0,
+            "token_type": "stablecoin",
+            "contract_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+            "ctoken_symbol": "aEthUSDC",
+            "pool_type": "LENDING",
+            "score": 88.4,
+            "score_label": "excellent",
+        }
+    ],
+    "total": 81,
+    "updated_at": "2026-03-14T06:00:00+00:00",
+    "source": "web3-defi-earn",
+    "top_apy_stable": None,
+    "top_apy_volatile": None,
+    "top_tvl": None,
+    "protocol_summary": {
+        "Aave": {"pool_count": 40, "total_tvl_usd": 500000000.0, "avg_apy": 3.2},
+        "Venus": {"pool_count": 41, "total_tvl_usd": 200000000.0, "avg_apy": 2.8},
+    },
+    "last_refresh_error": None,
+}
+
+
+@app.get(
+    "/binance/web3/earn/pools",
+    response_model=Web3EarnResponse,
+    tags=["web3"],
+    summary="获取币安 Web3 钱包 DeFi 理财池",
+    description=(
+        "返回币安 Web3 钱包 DeFi 理财池列表（Venus、Aave 协议），包含 APY、TVL 和综合评分。"
+        "数据来源：web3.binance.com 公开 API，无需鉴权。"
+    ),
+    responses={200: {"content": {"application/json": {"example": EXAMPLE_WEB3_EARN_RESPONSE}}}},
+)
+def get_web3_earn_pools(
+    protocol: str = Query(default="all", description="协议筛选：all / Venus / Aave"),
+    network: str = Query(default="all", description="网络筛选：all / BSC / ETH"),
+    token_type: str = Query(default="all", pattern="^(all|stablecoin|volatile)$"),
+    min_apy: float = Query(default=0.0, ge=0.0, description="最低 APY（百分比，例如 2.0 = 2%）"),
+    sort_by: str = Query(default="score", pattern="^(score|apy|tvl|symbol)$"),
+    order: str = Query(default="desc", pattern="^(asc|desc)$"),
+    limit: int = Query(default=20, ge=1, le=100),
+) -> dict[str, Any]:
+    return web3_service.get_pools(
+        protocol=protocol,
+        network=network,
+        token_type=token_type,
+        min_apy=min_apy,
+        sort_by=sort_by,
+        order=order,
+        limit=limit,
+    )
 
 
 @app.get(
