@@ -36,10 +36,18 @@
 
 ## 📸 运行预览 (Preview)
 
-| Alpha 稳定性分析 | 理财产品推荐 |
-| :---: | :---: |
-| ![Alpha Preview](https://github.com/user-attachments/assets/1360541d-b8d9-4cf5-b145-667954992be7) | ![Finance Preview](https://github.com/user-attachments/assets/05936746-17b6-45ef-897b-9f9397637cc9) |
-| **实时监控 Alpha 代币风险** | **一键筛选高收益理财活动** |
+<div align="center">
+  <table border="0">
+    <tr>
+      <td><img src="https://github.com/user-attachments/assets/1360541d-b8d9-4cf5-b145-667954992be7" width="400" alt="Alpha Preview"></td>
+      <td><img src="https://github.com/user-attachments/assets/05936746-17b6-45ef-897b-9f9397637cc9" width="400" alt="Finance Preview"></td>
+    </tr>
+    <tr align="center">
+      <td><b>Alpha 风险分析界面</b></td>
+      <td><b>理财活动评分界面</b></td>
+    </tr>
+  </table>
+</div>
 
 ---
 
@@ -73,10 +81,15 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
 
 ## 🛣️ 路线图 (Roadmap)
 
-- [x] **v1.0** - 基础架构：Alpha 监控与理财抓取。
-- [x] **v1.1** - 算法升级：Alpha 风险评分与活动参与评估。
+我们将持续迭代，致力于打造最智能的 Web3 理财大脑：
+
+- [x] **v1.0** - 基础架构：Alpha 4x 积分代币监控与理财产品抓取。
+- [x] **v1.1** - 算法升级：Alpha 风险评分算法与理财活动参与评分。
 - [x] **v1.4** - 稳定性增强：支持代理、自动重试与本地 Dashboard。
-- [ ] **v1.5** - **智能预警**：支持 Telegram / Discord 推送高收益机会。
+- [ ] **v1.5 (进行中)** - **智能预警推送**：支持 Telegram / Discord 推送，秒捕获高收益机会。
+- [ ] **v1.6 (规划中)** - **极简 Web 看板**：增加 Web Dashboard，直观对比理财收益与风险趋势。
+- [ ] **v1.7 (愿景)** - **Binance Web3 钱包联动**：深度集成 Web3 钱包质押活动与 DApp 收益监控。
+- [ ] **v1.8 (未来)** - **AI 智能配置引擎**：支持通过自然语言直接修改监控频率与评分偏好。
 
 ---
 
@@ -104,13 +117,21 @@ flowchart TD
 
 ```text
 binance-alpha-finance-skill/
-├── backend/          # FastAPI 后端核心逻辑
-├── docs/             # 教程、算法与 API 说明
-├── examples/         # JSON 返回示例
-├── scripts/          # 自动化运维脚本
+├── backend/          # FastAPI 后端核心逻辑 (Alpha/Finance/Web3 Monitor)
+├── docs/             # 教程、算法说明与 API 文档
+├── examples/         # 各模块 API 返回示例 (JSON)
+├── scripts/          # 部署、查询、清理与迁移脚本
 ├── tests/            # 自动化接口测试
-└── config.json       # 全局服务配置
+├── SKILL.md          # OpenClaw 技能定义
+└── config.json       # 服务配置 (Port, Proxy, Retention等)
 ```
+
+---
+
+## 🔒 安全说明 (Security & Notes)
+
+- **API 安全**：本项目仅在本地运行，配置的 API Key 不会上传至任何服务器。
+- **自托管**：所有理财快照均存储在本地 `backend/data` 目录下的 SQLite 数据库中。
 
 ---
 
