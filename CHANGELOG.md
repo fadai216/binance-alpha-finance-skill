@@ -2,6 +2,23 @@
 
 All notable changes to this repository will be documented in this file.
 
+## v1.4.0
+
+- Added `web3_wallet_monitor` module for Binance Web3 Wallet DeFi earn pools
+- New endpoint: `GET /binance/web3/earn/pools`
+  - Real-time Venus (BSC) + Aave (ETH) lending pool data
+  - Composite scoring: APY, TVL safety, protocol trust, stablecoin bonus
+  - Filters: protocol, network, token_type, min_apy
+  - Top picks: best stablecoin APY, best volatile APY, largest TVL pool
+  - Protocol summary with aggregate stats
+- Health endpoint now reports web3 pool data freshness and count
+- Scheduler auto-refreshes web3 pools alongside alpha and finance data
+- LLM copilot switched to direct HTTP calls (proxy-compatible, no SDK)
+- CORS origins now default to localhost-only for security
+- SQLite WAL mode enabled for history stores
+- In-memory TTL caching (20s) across all three data services
+- Scheduler: graceful SIGTERM/SIGINT shutdown + exponential backoff
+
 ## v1.1.3
 
 - Added `query.py` output modes:

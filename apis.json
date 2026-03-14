@@ -241,6 +241,48 @@
       ]
     },
     {
+      "name": "binance_web3_earn_pools",
+      "method": "GET",
+      "path": "/binance/web3/earn/pools",
+      "params": [
+        {
+          "name": "protocol",
+          "required": false,
+          "example": "all"
+        },
+        {
+          "name": "network",
+          "required": false,
+          "example": "all"
+        },
+        {
+          "name": "token_type",
+          "required": false,
+          "example": "stablecoin"
+        },
+        {
+          "name": "min_apy",
+          "required": false,
+          "example": "2.0"
+        },
+        {
+          "name": "sort_by",
+          "required": false,
+          "example": "score"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "example": "desc"
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "example": "20"
+        }
+      ]
+    },
+    {
       "name": "binance_copilot_summary",
       "method": "GET",
       "path": "/binance/copilot/summary",
