@@ -39,8 +39,8 @@
 <div align="center">
   <table border="0">
     <tr>
-      <td><img src="https://github.com/user-attachments/assets/1360541d-b8d9-4cf5-b145-667954992be7" width="400" alt="Alpha Preview"></td>
-      <td><img src="https://github.com/user-attachments/assets/05936746-17b6-45ef-897b-9f9397637cc9" width="400" alt="Finance Preview"></td>
+      <td><img src="https://github.com/user-attachments/assets/1360541d-b8d9-4cf5-b145-667954992be7" width="400"></td>
+      <td><img src="https://github.com/user-attachments/assets/05936746-17b6-45ef-897b-9f9397637cc9" width="400"></td>
     </tr>
     <tr align="center">
       <td><b>Alpha 风险分析界面</b></td>
