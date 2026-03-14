@@ -1,0 +1,11 @@
+{
+  "backendRoot": "./backend",
+  "apiBaseUrl": "http://127.0.0.1:8000",
+  "apiHost": "127.0.0.1",
+  "apiPort": 8000,
+  "alphaDefaultTop": 6,
+  "alphaHistoryDefaultLimit": 12,
+  "financeDefaultLimit": 20,
+  "financeHistoryDefaultLimit": 12,
+  "venvDir": "./backend/.venv"
+}

@@ -1,0 +1,9 @@
+backend/.venv/
+backend/__pycache__/
+backend/alpha_monitor/__pycache__/
+backend/finance_monitor/__pycache__/
+backend/data/*.json
+backend/data/*.sqlite3
+.runtime/
+*.pyc
+

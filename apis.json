@@ -1,0 +1,102 @@
+{
+  "service": "binance-alpha-finance",
+  "base_url": "http://127.0.0.1:8000",
+  "endpoints": [
+    {
+      "name": "alpha_stability",
+      "method": "GET",
+      "path": "/alpha/stability",
+      "params": [
+        {
+          "name": "top",
+          "required": false,
+          "example": "6"
+        }
+      ]
+    },
+    {
+      "name": "alpha_stability_history",
+      "method": "GET",
+      "path": "/alpha/stability/history",
+      "params": [
+        {
+          "name": "limit",
+          "required": false,
+          "example": "12"
+        }
+      ]
+    },
+    {
+      "name": "binance_finance",
+      "method": "GET",
+      "path": "/binance/finance",
+      "params": [
+        {
+          "name": "sort_by",
+          "required": false,
+          "example": "apr"
+        },
+        {
+          "name": "order",
+          "required": false,
+          "example": "desc"
+        },
+        {
+          "name": "product_type",
+          "required": false,
+          "example": "all"
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "example": "20"
+        }
+      ]
+    },
+    {
+      "name": "binance_finance_activity",
+      "method": "GET",
+      "path": "/binance/finance/activity",
+      "params": [
+        {
+          "name": "status",
+          "required": false,
+          "example": "active"
+        },
+        {
+          "name": "reward_type",
+          "required": false,
+          "example": "all"
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "example": "20"
+        }
+      ]
+    },
+    {
+      "name": "binance_finance_history",
+      "method": "GET",
+      "path": "/binance/finance/history",
+      "params": [
+        {
+          "name": "product_id",
+          "required": false,
+          "example": "activity:65317d61d1c445f99f73a04c05233dd2"
+        },
+        {
+          "name": "symbol",
+          "required": false,
+          "example": "RLUSD"
+        },
+        {
+          "name": "limit",
+          "required": false,
+          "example": "12"
+        }
+      ]
+    }
+  ]
+}
+
