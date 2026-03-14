@@ -11,10 +11,24 @@ from urllib.request import urlopen
 ENDPOINTS = {
     "alpha": "/alpha/stability",
     "alpha-history": "/alpha/stability/history",
+    "ranked": "/alpha/stability/ranked",
+    "trends": "/alpha/stability/trends",
     "finance": "/binance/finance",
     "activity": "/binance/finance/activity",
+    "scored": "/binance/finance/activity/scored",
+    "activity-scored": "/binance/finance/activity/scored",
+    "recommend": "/binance/finance/recommend",
+    "finance-recommend": "/binance/finance/recommend",
     "finance-history": "/binance/finance/history",
+    "summary": "/binance/copilot/summary",
+    "copilot-summary": "/binance/copilot/summary",
 }
+
+USAGE = (
+    "usage: query.py "
+    "<alpha|alpha-history|ranked|trends|finance|activity|scored|activity-scored|"
+    "recommend|finance-recommend|finance-history|summary|copilot-summary> [query_string]"
+)
 
 
 def load_config() -> dict:
@@ -28,7 +42,7 @@ def resolve_api_base_url(config: dict) -> str:
 
 def main() -> int:
     if len(sys.argv) < 2 or sys.argv[1] not in ENDPOINTS:
-        print("usage: query.py <alpha|alpha-history|finance|activity|finance-history> [query_string]", file=sys.stderr)
+        print(USAGE, file=sys.stderr)
         return 1
 
     endpoint = ENDPOINTS[sys.argv[1]]

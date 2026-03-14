@@ -18,6 +18,8 @@ This repository is designed to be cloned directly into `~/.openclaw/skills/` and
 中文教程见：
 
 - [docs/TUTORIAL.zh-CN.md](./docs/TUTORIAL.zh-CN.md)
+- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)
+- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)
 
 ## What This Skill Does
 
@@ -100,6 +102,8 @@ binance-alpha-finance-skill/
 │   ├── RELEASE_NOTES_v1.0.0.md
 │   ├── RELEASE_NOTES_v1.1.0.md
 │   ├── RELEASE_NOTES_v1.1.1.md
+│   ├── RELEASE_NOTES_v1.1.2.md
+│   ├── OPENCLAW_PROMPTS.zh-CN.md
 │   └── TUTORIAL.zh-CN.md
 ├── backend/
 │   ├── alpha_monitor/
@@ -162,6 +166,8 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=12'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=6'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=6'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh ranked 'top=3'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh trends 'limit=6'
 ```
 
 ### Finance
@@ -172,16 +178,9 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&limit=5'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&low_barrier_only=true&max_capital=500&limit=5'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history 'product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5'
-```
-
-### New Scored / Summary Endpoints
-
-```bash
-curl 'http://127.0.0.1:8000/binance/finance/activity/scored?limit=3'
-curl 'http://127.0.0.1:8000/binance/finance/recommend?sort_by=stability&limit=3'
-curl 'http://127.0.0.1:8000/alpha/stability/ranked?top=3'
-curl 'http://127.0.0.1:8000/alpha/stability/trends?limit=6'
-curl 'http://127.0.0.1:8000/binance/copilot/summary?style=balanced'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh scored 'limit=3'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh recommend 'sort_by=stability&limit=3'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh summary 'style=balanced'
 ```
 
 ### Manual Backend Control
@@ -338,3 +337,9 @@ Default local API:
 - This repository is backend-only. No frontend is required for skill usage.
 - Runtime files, local caches, sqlite snapshots, and `.venv/` are ignored by `.gitignore`.
 - For detailed local API behavior, see [backend/API.md](./backend/API.md).
+
+## OpenClaw Prompt Examples
+
+If you prefer natural language instructions instead of shell commands, see:
+
+- [docs/OPENCLAW_PROMPTS.zh-CN.md](./docs/OPENCLAW_PROMPTS.zh-CN.md)

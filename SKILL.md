@@ -4,7 +4,7 @@ description: |
   本地 Binance Alpha + Finance 聚合 skill。用于查询 Alpha 4×积分代币稳定性、币安理财产品、
   活动列表、历史快照，以及按 product_id 查询理财产品历史。支持活动评分、理财推荐、Alpha 风险趋势、
   今日机会总结。优先调用本机 FastAPI 后端。
-argument-hint: [alpha / finance / activity / scored / recommend / summary / product_id]
+argument-hint: [alpha / ranked / trends / finance / activity / scored / recommend / summary / product_id]
 allowed-tools: Bash(curl *), Bash(python *), Bash(uvicorn *), Bash(bash *)
 ---
 
@@ -173,16 +173,16 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
 ```bash
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha "top=3"
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history "limit=12"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh ranked "top=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh trends "limit=6"
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance "sort_by=apr&order=desc&product_type=all&limit=5"
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance "sort_by=stability&order=desc&redeemable_only=true&limit=5"
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity "status=active&reward_type=all&limit=5"
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity "status=active&reward_type=all&low_barrier_only=true&max_capital=500&limit=5"
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history "product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5"
-curl 'http://127.0.0.1:8000/binance/finance/activity/scored?limit=3'
-curl 'http://127.0.0.1:8000/binance/finance/recommend?sort_by=stability&limit=3'
-curl 'http://127.0.0.1:8000/alpha/stability/ranked?top=3'
-curl 'http://127.0.0.1:8000/alpha/stability/trends?limit=6'
-curl 'http://127.0.0.1:8000/binance/copilot/summary?style=balanced'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh scored "limit=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh recommend "sort_by=stability&limit=3"
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh summary "style=balanced"
 ```
 
 ## Portability
