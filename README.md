@@ -38,20 +38,28 @@
 
 ## 🛠️ 快速开始 (Quick Start)
 
-### 1. 准备工作 (Checklist)
-在开始之前，请确保你的电脑已安装以下工具：
+### Step 0: 安装 OpenClaw 本体
+本技能需要 [OpenClaw](https://github.com/openclaw/openclaw) 框架作为运行宿主。如果你还没有安装 OpenClaw，请先执行：
+
+```bash
+# 请参考 OpenClaw 官方文档进行安装
+# 通常为：pip install openclaw  或从源码安装
+```
+
+### Step 1: 准备工作 (Checklist)
+确保你的电脑已安装以下基础工具：
 - **Python 3.11+** ([下载地址](https://www.python.org/downloads/))
 - **Git** ([下载地址](https://git-scm.com/downloads))
 
-### 2. 安装 (Install)
-打开终端（Mac/Linux 使用 Terminal，Windows 使用 PowerShell），执行：
+### Step 2: 安装本技能 (Install Skill)
+将本技能克隆到 OpenClaw 的默认技能目录：
 
 ```bash
 git clone https://github.com/fadai216/binance-alpha-finance-skill.git ~/.openclaw/skills/binance-alpha-finance
 ```
 
-### 3. 一键初始化 (Initialize)
-进入目录并运行脚本，它会自动搞定环境和依赖：
+### Step 3: 一键初始化 (Initialize)
+运行初始化脚本，自动配置环境：
 
 ```bash
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
@@ -87,6 +95,20 @@ flowchart TD
     C --> I[SQLite History]
 ```
 </details>
+
+---
+
+## 📂 项目结构 (Repository Layout)
+
+```text
+binance-alpha-finance-skill/
+├── backend/          # FastAPI 后端核心逻辑
+├── docs/             # 详细教程与更新日志
+├── examples/         # API 返回示例 (JSON)
+├── scripts/          # 自动化部署与查询脚本
+├── SKILL.md          # OpenClaw 技能定义
+└── config.json       # 服务配置 (Port, URL等)
+```
 
 ---
 
