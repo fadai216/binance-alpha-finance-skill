@@ -4,6 +4,8 @@ backend/alpha_monitor/__pycache__/
 backend/finance_monitor/__pycache__/
 backend/data/*.json
 backend/data/*.sqlite3
+backend/data/*.sqlite3-shm
+backend/data/*.sqlite3-wal
 .runtime/
 *.pyc
 

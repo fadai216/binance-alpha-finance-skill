@@ -43,7 +43,10 @@ class Settings:
     cors_allow_origins: list[str] = field(
         default_factory=lambda: [
             item.strip()
-            for item in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",")
+            for item in os.getenv(
+                "CORS_ALLOW_ORIGINS",
+                "http://127.0.0.1:8000,http://localhost:8000",
+            ).split(",")
             if item.strip()
         ]
     )

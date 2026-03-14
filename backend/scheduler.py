@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import signal
 import time
 
 from alpha_monitor.storage import load_state
@@ -14,6 +15,8 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s",
 )
 
+_MAX_BACKOFF_SECONDS = 300  # 最多退避 5 分钟
+
 
 def main() -> None:
     settings = get_settings()
@@ -22,12 +25,25 @@ def main() -> None:
     interval = settings.refresh_interval_seconds
     logging.info("scheduler started, refresh interval=%ss", interval)
 
-    while True:
+    running = True
+
+    def _handle_shutdown(signum: int, _frame: object) -> None:
+        nonlocal running
+        logging.info("received signal %s, shutting down gracefully", signum)
+        running = False
+
+    signal.signal(signal.SIGTERM, _handle_shutdown)
+    signal.signal(signal.SIGINT, _handle_shutdown)
+
+    alpha_consecutive_failures = 0
+
+    while running:
         started_at = time.time()
         service.note_scheduler_attempt()
         try:
             report = service.refresh_safe()
             service.note_scheduler_success()
+            alpha_consecutive_failures = 0
             diagnostics = report.get("diagnostics") or {}
             page_status = (diagnostics.get("points_page") or {}).get("status")
             logging.info(
@@ -39,6 +55,7 @@ def main() -> None:
                 page_status,
             )
         except Exception as exc:  # noqa: BLE001
+            alpha_consecutive_failures += 1
             service.note_scheduler_failure(str(exc))
             state = load_state(settings.cache_file)
             cached_report = state.get("latest_report")
@@ -69,8 +86,17 @@ def main() -> None:
                 finance_service.note_scheduler_failure(str(exc))
                 logging.exception("finance refresh failed: %s", exc)
 
-        sleep_for = max(0, interval - (time.time() - started_at))
+        backoff = min(interval * (2 ** alpha_consecutive_failures), _MAX_BACKOFF_SECONDS)
+        sleep_for = max(0, backoff - (time.time() - started_at))
+        if alpha_consecutive_failures > 0:
+            logging.info(
+                "backoff applied | consecutive_failures=%s | sleep_for=%.1fs",
+                alpha_consecutive_failures,
+                sleep_for,
+            )
         time.sleep(sleep_for)
+
+    logging.info("scheduler stopped")
 
 
 if __name__ == "__main__":

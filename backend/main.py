@@ -503,8 +503,33 @@ EXAMPLE_ALPHA_TREND_RESPONSE = {
 
 
 @app.get("/health", tags=["system"], summary="健康检查")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
+def health() -> dict[str, Any]:
+    from alpha_monitor.storage import load_state as _load_alpha_state
+    from finance_monitor.storage import load_state as _load_finance_state
+
+    alpha_state = _load_alpha_state(settings.cache_file)
+    finance_state = _load_finance_state(settings.finance_cache_file)
+
+    alpha_report = alpha_state.get("latest_report")
+    finance_snapshot = finance_state.get("latest_snapshot")
+    alpha_scheduler = alpha_state.get("scheduler_state") or {}
+    finance_scheduler = finance_state.get("scheduler_state") or {}
+
+    return {
+        "status": "ok",
+        "alpha": {
+            "updated_at": alpha_report.get("updated_at") if alpha_report else None,
+            "source": alpha_report.get("source") if alpha_report else None,
+            "consecutive_failures": alpha_scheduler.get("consecutive_failures", 0),
+            "last_error": alpha_scheduler.get("last_error"),
+        },
+        "finance": {
+            "updated_at": finance_snapshot.get("updated_at") if finance_snapshot else None,
+            "source": finance_snapshot.get("source") if finance_snapshot else None,
+            "consecutive_failures": finance_scheduler.get("consecutive_failures", 0),
+            "last_error": finance_scheduler.get("last_error"),
+        },
+    }
 
 
 @app.get(
