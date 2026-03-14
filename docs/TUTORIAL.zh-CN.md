@@ -1,190 +1,111 @@
-# Binance Alpha Finance Skill 中文教程
+# 🍼 Binance Alpha Finance Skill 保姆级教程
 
-## 这是什么
+欢迎使用！本教程专为“小白”设计，即便你完全没写过代码，只要跟着步骤走也能成功运行。
 
-这是一个可以直接放进 `OpenClaw` 使用的本地 skill，主要提供两类能力：
+---
 
-1. `Binance Alpha`
-   - 4×积分代币稳定性分析
-   - 波动率 / spread / score
-   - alerts
-   - 历史快照
+## 🛠️ 第一步：准备工作 (Pre-check)
 
-2. `Binance Finance`
-   - 理财产品列表
-   - 活动列表
-   - 理财历史快照
-   - 按 `product_id` 查询单产品历史
+在开始之前，请确保你的电脑已经安装了以下两个基础工具：
 
-## 适合谁
+1.  **Git** (用来下载代码)
+    - [下载地址](https://git-scm.com/downloads)
+    - 安装完成后，在终端输入 `git --version` 看到数字即成功。
+2.  **Python 3.11 或更高版本** (用来运行程序)
+    - [下载地址](https://www.python.org/downloads/)
+    - **注意**：Windows 用户安装时务必勾选 **"Add Python to PATH"** 复选框！
+    - 安装完成后，在终端输入 `python --version` 看到数字即成功。
 
-- 想把 Binance Alpha / Finance 接进 OpenClaw 的用户
-- 想本地自托管 skill，而不是依赖第三方云接口的用户
-- 想做自动化脚本、策略、监控的用户
+> **💡 什么是终端 (Terminal)？**
+> - **Windows 用户**：点击开始菜单，搜索 `PowerShell` 并打开。
+> - **Mac 用户**：点击 Command+空格，搜索 `Terminal` 并打开。
 
-## 安装方式
+---
 
-### 方式一：直接 clone 到 OpenClaw skills
+## 📥 第二步：下载与安装 (Install)
 
+请在你的终端里**一行一行**复制并执行以下命令：
+
+### 1. 下载项目
 ```bash
 git clone https://github.com/fadai216/binance-alpha-finance-skill.git ~/.openclaw/skills/binance-alpha-finance
 ```
 
-### 方式二：先 clone 到任意目录，再安装
-
+### 2. 进入目录
 ```bash
-git clone https://github.com/fadai216/binance-alpha-finance-skill.git
-cd binance-alpha-finance-skill
-bash scripts/install.sh
+cd ~/.openclaw/skills/binance-alpha-finance
 ```
 
-## 首次启动
-
-执行：
-
+### 3. 一键启动后端
 ```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
+bash scripts/ensure_backend.sh
+```
+**✨ 成功的样子：**
+脚本运行完后，如果最后几行显示 `Backend is healthy at 127.0.0.1:8000`，说明你的“理财数据大脑”已经成功启动了！
+
+---
+
+## 🔑 第三步：配置 API Key (进阶可选)
+
+默认情况下，你只能看到“活动公告”中的理财产品。如果你想看**完整的币安理财池**，需要配置 API Key：
+
+1. 找到项目根目录下的 `config.json`（或者根据你的系统环境配置）。
+2. 为了简单起见，小白可以直接在终端输入：
+   ```bash
+   export BINANCE_API_KEY="你的Key"
+   export BINANCE_API_SECRET="你的Secret"
+   ```
+   *注意：这种方式在关闭终端后会失效。长期使用建议在 OpenClaw 的环境变量或 `.env` 文件中配置。*
+
+---
+
+## 🔍 第四步：如何查询数据 (Quick Query)
+
+现在你的后端已经在后台默默运行了，你可以试着运行以下命令来看看它抓到了什么：
+
+### 1. 看看当前最稳的 Alpha 代币
+```bash
+bash scripts/query.sh alpha 'top=3'
 ```
 
-这一步会自动：
-
-1. 创建 `backend/.venv`
-2. 安装 Python 依赖
-3. 启动 FastAPI 后端
-
-如果 `8000` 端口已经有同一个后端在运行，并且 `/health` 可用，它会直接返回成功，不会重复报错。
-
-## 常用查询
-
-### 查询 Alpha 稳定性
-
+### 2. 看看高收益理财产品
 ```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
+bash scripts/query.sh finance 'sort_by=apr&limit=5'
 ```
 
-### 查询 Alpha 历史
-
+### 3. 获取一份投资建议摘要 (Copilot)
 ```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=12'
+bash scripts/query.sh summary 'style=balanced'
 ```
+**✨ 成功的样子：**
+你会看到一串 JSON 格式的数据。别担心，如果你把这个 Skill 接进 **OpenClaw**，AI Agent 会把这些枯燥的数据变成好听的人话告诉你。
 
-### 查询理财产品
+---
 
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=apr&order=desc&product_type=all&limit=5'
-```
+## 🤖 在 OpenClaw 中怎么用？
 
-### 查询活动列表
+这个项目是 OpenClaw 的“技能包”。配置好后，你可以直接问 AI：
+- *“帮我分析一下最近币安最稳的 Alpha 币。”*
+- *“今天有哪些高年化的理财活动可以参加？”*
+- *“根据我的保守型风格，给出一份理财建议。”*
 
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&limit=5'
-```
+---
 
-### 按 product_id 查询单产品历史
+## 🆘 常见问题 (FAQ)
 
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history 'product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5'
-```
+### 1. 运行 `ensure_backend.sh` 没反应或报错？
+- 检查你的网络是否能正常访问币安 API。
+- 确保 Python 版本是 3.11 或更高。
 
-## 返回字段重点
+### 2. 为什么我看不到某些币种的理财？
+- 如果没配 API Key，数据来源仅限公开的活动公告。配上 API Key 后即可解锁完整池子。
 
-### 理财产品字段
-
-- `product_id`
-  - 稳定唯一 ID
-- `product_name`
-  - 产品名
-- `product_type`
-  - `flexible | locked | activity`
-- `apr`
-  - 年化收益率
-- `term_days`
-  - 期限
-- `source`
-  - 来源标签
-
-### source 说明
-
-- `signed-sapi`
-  - 官方 Binance Simple Earn signed API
-- `activity-derived`
-  - 从币安活动公告里派生出来的理财产品
-- `public-finance-fallback`
-  - 回退链路或旧快照补全
-
-## 如何拿完整官方理财池
-
-默认情况下，如果没有配置 API key，skill 只能：
-
-- 调 Binance 活动 CMS
-- 解析活动详情
-- 派生活动型理财产品
-
-如果你想优先走官方 Simple Earn signed API，需要配置：
-
-```bash
-export BINANCE_API_KEY="你的 key"
-export BINANCE_API_SECRET="你的 secret"
-```
-
-然后重启后端：
-
-```bash
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/ensure_backend.sh
-```
-
-## OpenClaw 里怎么用
-
-这个 skill 是后端型 skill，不依赖前端页面。
-
-你可以让 OpenClaw：
-
-- 启动 skill 后端
-- 调用 `query.sh`
-- 直接读取本地 API 返回 JSON
-
-推荐口令：
-
-- 查 alpha 稳定性
-- 查 finance 列表
-- 查 finance activity
-- 查某个 `product_id` 的 finance history
-
-## 常见问题
-
-### 1. `ensure_backend.sh` 报端口占用
-
-如果健康检查成功，它现在会直接判定为“已可用”。
-
-### 2. finance 里只有活动派生产品，没有完整理财池
-
-说明你当前没配：
-
-- `BINANCE_API_KEY`
-- `BINANCE_API_SECRET`
-
-### 3. 历史查询为什么优先用 `product_id`
-
-因为产品名可能变、文案可能变，`product_id` 更稳定，不容易串产品。
-
-## 仓库文件说明
-
-- `SKILL.md`
-  - OpenClaw skill 主说明
-- `config.json`
-  - 本地 API 和路径配置
-- `backend/`
-  - FastAPI 后端源码
-- `scripts/`
-  - 启动、安装、查询脚本
-
-## 升级
-
-如果你从 GitHub 拉了新版本：
-
+### 3. 如何更新到最新版？
 ```bash
 cd ~/.openclaw/skills/binance-alpha-finance
 git pull
 bash scripts/ensure_backend.sh
 ```
 
+---
+**现在，你已经完成了所有设置！快去和你的 AI 助手聊聊币安行情吧！🚀**
