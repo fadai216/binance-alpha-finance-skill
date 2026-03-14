@@ -39,12 +39,12 @@
 <div align="center">
   <table border="0">
     <tr>
-      <td><img src="https://github.com/user-attachments/assets/1360541d-b8d9-4cf5-b145-667954992be7" width="400"></td>
-      <td><img src="https://github.com/user-attachments/assets/05936746-17b6-45ef-897b-9f9397637cc9" width="400"></td>
+      <td><img src="https://img.shields.io/badge/Alpha_Monitor-Status_Healthy-009688?style=for-the-badge&logo=google-cloud&logoColor=white" width="400"></td>
+      <td><img src="https://img.shields.io/badge/Finance_Activity-High_APR_Detected-F3BA2F?style=for-the-badge&logo=binance&logoColor=white" width="400"></td>
     </tr>
     <tr align="center">
-      <td><b>Alpha 风险分析界面</b></td>
-      <td><b>理财活动评分界面</b></td>
+      <td><b>Alpha 风险监控实时快照</b></td>
+      <td><b>高收益理财活动评分对比</b></td>
     </tr>
   </table>
 </div>
