@@ -168,9 +168,10 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=6'
 
 ```bash
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=apr&order=desc&product_type=all&limit=5'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=stability&order=desc&redeemable_only=true&limit=5'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&limit=5'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&low_barrier_only=true&max_capital=500&limit=5'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history 'product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5'
-bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&low_barrier_only=true&limit=5'
 ```
 
 ### New Scored / Summary Endpoints
