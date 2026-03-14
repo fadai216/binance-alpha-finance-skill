@@ -611,7 +611,9 @@ class BinanceFinanceService:
         estimated_requirement_usd = self._amount_to_usd(estimated_requirement)
         reward_score, reward_reason = self._activity_reward_strength(blob)
         difficulty, difficulty_penalty, difficulty_reason = self._activity_difficulty(blob)
-        restriction_penalty, restriction_reason = self._activity_restrictions(blob)
+        restriction_info = self._activity_restrictions(blob)
+        restriction_penalty = restriction_info["penalty"]
+        restriction_reason = restriction_info["reason"]
         urgency, urgency_bonus, urgency_reason = self._activity_urgency(annotated.get("end_time"))
 
         base_score = reward_score + urgency_bonus - difficulty_penalty - restriction_penalty
@@ -632,11 +634,17 @@ class BinanceFinanceService:
         annotated["score_label"] = self._score_label(float(annotated["score"]), high=68, medium=42)
         annotated["reasons"] = reasons[:5]
         annotated["participation_difficulty"] = difficulty
+        annotated["complexity_score"] = self._complexity_score(difficulty, difficulty_penalty, restriction_penalty)
         annotated["time_urgency"] = urgency
         annotated["estimated_min_requirement"] = estimated_requirement
         annotated["estimated_min_requirement_usd"] = estimated_requirement_usd
         annotated["low_barrier"] = low_barrier
         annotated["low_barrier_reason"] = low_barrier_reason
+        annotated["requires_kyc"] = restriction_info["requires_kyc"]
+        annotated["requires_holding"] = restriction_info["requires_holding"]
+        annotated["requires_region_eligibility"] = restriction_info["requires_region_eligibility"]
+        annotated["requires_trading_volume"] = restriction_info["requires_trading_volume"]
+        annotated["restriction_flags"] = restriction_info["restriction_flags"]
         return annotated
 
     @staticmethod
@@ -968,20 +976,41 @@ class BinanceFinanceService:
         return "low", 4.0, "参与动作相对简单"
 
     @staticmethod
-    def _activity_restrictions(text: str) -> tuple[float, str | None]:
+    def _activity_restrictions(text: str) -> dict[str, Any]:
         lower = text.lower()
         penalties = 0.0
         reasons: list[str] = []
-        if any(keyword in lower for keyword in ["kyc", "verify", "identity verification"]):
+        requires_kyc = any(keyword in lower for keyword in ["kyc", "verify", "identity verification"])
+        requires_region = any(keyword in lower for keyword in ["eligible users", "selected users", "region", "jurisdiction"])
+        requires_holding = any(keyword in lower for keyword in ["holders", "holding", "maintain", "vip"])
+        requires_volume = any(keyword in lower for keyword in ["trade volume", "leaderboard", "net subscriptions", "ranked"])
+        restriction_flags: list[str] = []
+
+        if requires_kyc:
             penalties += 12
             reasons.append("存在 KYC/认证限制")
-        if any(keyword in lower for keyword in ["eligible users", "selected users", "region", "jurisdiction"]):
+            restriction_flags.append("kyc")
+        if requires_region:
             penalties += 8
             reasons.append("存在地区或资格限制")
-        if any(keyword in lower for keyword in ["holders", "holding", "maintain", "vip"]):
+            restriction_flags.append("region")
+        if requires_holding:
             penalties += 6
             reasons.append("需要额外持仓或资格")
-        return penalties, "；".join(reasons) if reasons else None
+            restriction_flags.append("holding")
+        if requires_volume:
+            penalties += 7
+            reasons.append("需要交易量/排行条件")
+            restriction_flags.append("volume")
+        return {
+            "penalty": penalties,
+            "reason": "；".join(reasons) if reasons else None,
+            "requires_kyc": requires_kyc,
+            "requires_holding": requires_holding,
+            "requires_region_eligibility": requires_region,
+            "requires_trading_volume": requires_volume,
+            "restriction_flags": restriction_flags,
+        }
 
     def _activity_urgency(self, end_time: str | None) -> tuple[str, float, str | None]:
         if not end_time:
@@ -1017,6 +1046,11 @@ class BinanceFinanceService:
         if difficulty == "low":
             return True, "无需明显资金门槛，操作简单"
         return difficulty != "high", "未发现明显大资金门槛"
+
+    @staticmethod
+    def _complexity_score(difficulty: str, difficulty_penalty: float, restriction_penalty: float) -> float:
+        base = {"low": 20.0, "medium": 50.0, "high": 78.0}.get(difficulty, 50.0)
+        return round(min(base + difficulty_penalty + restriction_penalty * 0.6, 100.0), 2)
 
     @staticmethod
     def _product_stability_sort_key(item: dict[str, Any]) -> tuple[float, int, int, float]:

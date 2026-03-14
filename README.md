@@ -32,6 +32,13 @@ This repository is designed to be cloned directly into `~/.openclaw/skills/` and
 - returns alerts:
   - new token alerts
   - high volatility alerts
+- adds direct risk ranking fields:
+  - `risk_score`
+  - `risk_label`
+  - `abnormal_flag`
+  - `risk_reason`
+- adds trend API:
+  - `/alpha/stability/trends`
 
 ### Finance Module
 
@@ -43,6 +50,19 @@ This repository is designed to be cloned directly into `~/.openclaw/skills/` and
   - activity filtering
   - history snapshots
   - `product_id` based history lookup
+  - activity participation scoring
+  - low-barrier activity filtering
+  - finance product recommendation scoring
+
+### Copilot Summary
+
+- aggregates:
+  - Alpha stability and risk trends
+  - finance recommendations
+  - scored activities
+- provides:
+  - `/binance/copilot/summary`
+  - `style=conservative|balanced|aggressive`
 
 ### Data Source Strategy
 
@@ -138,6 +158,7 @@ This will:
 ```bash
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'limit=12'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha 'top=3'
 ```
 
 ### Finance
@@ -146,6 +167,17 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh alpha-history 'li
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance 'sort_by=apr&order=desc&product_type=all&limit=5'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&limit=5'
 bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh finance-history 'product_id=activity:65317d61d1c445f99f73a04c05233dd2&limit=5'
+bash ~/.openclaw/skills/binance-alpha-finance/scripts/query.sh activity 'status=active&reward_type=all&low_barrier_only=true&limit=5'
+```
+
+### New Scored / Summary Endpoints
+
+```bash
+curl 'http://127.0.0.1:8000/binance/finance/activity/scored?limit=3'
+curl 'http://127.0.0.1:8000/binance/finance/recommend?sort_by=stability&limit=3'
+curl 'http://127.0.0.1:8000/alpha/stability/ranked?top=3'
+curl 'http://127.0.0.1:8000/alpha/stability/trends?limit=6'
+curl 'http://127.0.0.1:8000/binance/copilot/summary?style=balanced'
 ```
 
 ### Manual Backend Control
@@ -204,6 +236,73 @@ bash ~/.openclaw/skills/binance-alpha-finance/scripts/start_scheduler.sh
 ]
 ```
 
+### `/binance/finance/activity/scored`
+
+Returns structured scoring fields:
+
+- `score`
+- `score_label`
+- `reasons`
+- `participation_difficulty`
+- `time_urgency`
+- `complexity_score`
+- `requires_kyc`
+- `requires_holding`
+- `requires_region_eligibility`
+- `requires_trading_volume`
+- `restriction_flags`
+- `low_barrier`
+
+### `/binance/finance/recommend`
+
+Supports:
+
+- `min_apr`
+- `max_term`
+- `redeemable_only`
+- `source`
+- `product_type`
+- `sort_by=apr|term|stability|recommendation`
+
+Additional output fields:
+
+- `recommendation_score`
+- `recommendation_reason`
+- `risk_hint`
+- `redeemable`
+
+### `/alpha/stability/ranked`
+
+Adds:
+
+- `most_stable`
+- `most_risky`
+- `abnormal_symbols`
+
+### `/alpha/stability/trends`
+
+Returns per-symbol trend analysis:
+
+- `risk_delta`
+- `score_delta`
+- `volatility_delta`
+- `spread_delta`
+- `trend_label`
+- `trend_reason`
+- `top_worsening`
+- `top_improving`
+
+### `/binance/copilot/summary`
+
+Returns:
+
+- `top_alpha_opportunity`
+- `top_finance_opportunity`
+- `top_activity_opportunity`
+- `alpha_risk_trends`
+- `overall_highlights`
+- `summary_text`
+
 ## Optional Binance API Credentials
 
 If you want the full official Simple Earn product pool instead of fallback/public-derived data, configure:
@@ -235,4 +334,3 @@ Default local API:
 - This repository is backend-only. No frontend is required for skill usage.
 - Runtime files, local caches, sqlite snapshots, and `.venv/` are ignored by `.gitignore`.
 - For detailed local API behavior, see [backend/API.md](./backend/API.md).
-

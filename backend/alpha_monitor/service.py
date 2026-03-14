@@ -150,7 +150,54 @@ class AlphaStabilityService:
             default=None,
         )
         report["abnormal_symbols"] = [item["symbol"] for item in analysis if item.get("abnormal_flag")]
+        report["risk_trends"] = self.get_risk_trends(limit=6).get("items", [])[: len(report["analysis"])]
         return report
+
+    def get_risk_trends(self, limit: int = 12) -> dict[str, Any]:
+        snapshots = self.get_history(limit=limit)
+        latest_by_symbol: dict[str, dict[str, Any]] = {}
+        previous_by_symbol: dict[str, dict[str, Any]] = {}
+
+        for snapshot in snapshots:
+            for item in snapshot.get("analysis", []):
+                symbol = item["symbol"]
+                if symbol not in latest_by_symbol:
+                    latest_by_symbol[symbol] = item
+                elif symbol not in previous_by_symbol:
+                    previous_by_symbol[symbol] = item
+
+        trend_items: list[dict[str, Any]] = []
+        for symbol, current in latest_by_symbol.items():
+            previous = previous_by_symbol.get(symbol)
+            risk_delta = float(current.get("risk_score") or 0) - float((previous or {}).get("risk_score") or 0)
+            score_delta = float(current.get("score") or 0) - float((previous or {}).get("score") or 0)
+            volatility_delta = float(current.get("volatility") or 0) - float((previous or {}).get("volatility") or 0)
+            spread_delta = float(current.get("spread") or 0) - float((previous or {}).get("spread") or 0)
+            trend_items.append(
+                {
+                    "symbol": symbol,
+                    "current_risk_score": current.get("risk_score"),
+                    "current_risk_label": current.get("risk_label"),
+                    "abnormal_flag": current.get("abnormal_flag"),
+                    "risk_delta": round(risk_delta, 4),
+                    "score_delta": round(score_delta, 6),
+                    "volatility_delta": round(volatility_delta, 6),
+                    "spread_delta": round(spread_delta, 6),
+                    "trend_label": self._trend_label(risk_delta),
+                    "trend_reason": self._trend_reason(risk_delta, volatility_delta, spread_delta),
+                }
+            )
+
+        trend_items.sort(key=lambda item: abs(float(item["risk_delta"])), reverse=True)
+        worsening = [item for item in trend_items if item["trend_label"] == "worsening"]
+        improving = [item for item in trend_items if item["trend_label"] == "improving"]
+        return {
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "window_snapshots": len(snapshots),
+            "items": trend_items,
+            "top_worsening": worsening[0] if worsening else None,
+            "top_improving": improving[0] if improving else None,
+        }
 
     def get_history(self, limit: int = 12) -> list[dict[str, Any]]:
         limit = max(1, limit)
@@ -415,3 +462,28 @@ class AlphaStabilityService:
                 }
             )
         return annotated
+
+    @staticmethod
+    def _trend_label(risk_delta: float) -> str:
+        if risk_delta >= 10:
+            return "worsening"
+        if risk_delta <= -10:
+            return "improving"
+        return "stable"
+
+    @staticmethod
+    def _trend_reason(risk_delta: float, volatility_delta: float, spread_delta: float) -> str:
+        reasons: list[str] = []
+        if risk_delta >= 10:
+            reasons.append("整体风险上升")
+        elif risk_delta <= -10:
+            reasons.append("整体风险下降")
+        if volatility_delta > 0:
+            reasons.append("波动率抬升")
+        elif volatility_delta < 0:
+            reasons.append("波动率回落")
+        if spread_delta > 0:
+            reasons.append("价差扩大")
+        elif spread_delta < 0:
+            reasons.append("价差收敛")
+        return "；".join(reasons[:3]) if reasons else "变化有限"

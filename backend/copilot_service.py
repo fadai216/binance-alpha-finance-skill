@@ -18,6 +18,7 @@ class BinanceCopilotService:
 
     def build_summary(self, style: str = "balanced") -> dict[str, Any]:
         alpha_report = self.alpha_service.get_ranked_report(top=6)
+        alpha_trends = self.alpha_service.get_risk_trends(limit=6)
         finance_report = self.finance_service.get_recommended_products(
             sort_by="stability" if style == "conservative" else "apr",
             order="desc",
@@ -33,7 +34,7 @@ class BinanceCopilotService:
         top_alpha = self._pick_alpha(alpha_report, style)
         top_finance = self._pick_finance(finance_report["items"], style)
         top_activity = self._pick_activity(activity_report["items"], style)
-        highlights = self._build_highlights(top_alpha, top_finance, top_activity)
+        highlights = self._build_highlights(top_alpha, top_finance, top_activity, alpha_trends)
 
         return {
             "style": style,
@@ -41,8 +42,9 @@ class BinanceCopilotService:
             "top_alpha_opportunity": top_alpha,
             "top_finance_opportunity": top_finance,
             "top_activity_opportunity": top_activity,
+            "alpha_risk_trends": alpha_trends,
             "overall_highlights": highlights,
-            "summary_text": self._build_summary_text(style, top_alpha, top_finance, top_activity),
+            "summary_text": self._build_summary_text(style, top_alpha, top_finance, top_activity, alpha_trends),
         }
 
     @staticmethod
@@ -83,6 +85,7 @@ class BinanceCopilotService:
         top_alpha: dict[str, Any] | None,
         top_finance: dict[str, Any] | None,
         top_activity: dict[str, Any] | None,
+        alpha_trends: dict[str, Any],
     ) -> list[dict[str, Any]]:
         highlights: list[dict[str, Any]] = []
         if top_alpha:
@@ -109,6 +112,15 @@ class BinanceCopilotService:
                     "reason": ", ".join(top_activity.get("reasons") or []) or top_activity.get("score_label"),
                 }
             )
+        worsening = alpha_trends.get("top_worsening")
+        if worsening:
+            highlights.append(
+                {
+                    "type": "alpha-trend",
+                    "title": worsening["symbol"],
+                    "reason": worsening.get("trend_reason") or worsening.get("trend_label"),
+                }
+            )
         return highlights
 
     @staticmethod
@@ -117,6 +129,7 @@ class BinanceCopilotService:
         top_alpha: dict[str, Any] | None,
         top_finance: dict[str, Any] | None,
         top_activity: dict[str, Any] | None,
+        alpha_trends: dict[str, Any],
     ) -> str:
         lines = [f"今日 Binance 机会总结（{style} 风格）"]
         if top_alpha:
@@ -131,6 +144,10 @@ class BinanceCopilotService:
             lines.append(
                 f"活动方向优先关注《{top_activity['title']}》，评分 {top_activity.get('score')}，门槛判断 {top_activity.get('low_barrier')}。"
             )
+        worsening = alpha_trends.get("top_worsening")
+        if worsening:
+            lines.append(
+                f"风险趋势方面，{worsening['symbol']} 近期在走弱，变化原因：{worsening.get('trend_reason')}。"
+            )
         lines.append("结果仅供 skill 辅助判断，参与前仍需结合地区资格、KYC 和资金规模复核。")
         return "\n".join(lines)
-

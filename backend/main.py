@@ -91,6 +91,10 @@ class HistoryAnalysisItem(BaseModel):
     volatility: float
     spread: float
     score: float
+    risk_score: float | None = None
+    risk_label: str | None = None
+    abnormal_flag: bool | None = None
+    risk_reason: str | None = None
 
 
 class HistorySnapshot(BaseModel):
@@ -138,6 +142,12 @@ class FinanceActivityItem(BaseModel):
     estimated_min_requirement_usd: float | None = None
     low_barrier: bool | None = None
     low_barrier_reason: str | None = None
+    complexity_score: float | None = None
+    requires_kyc: bool | None = None
+    requires_holding: bool | None = None
+    requires_region_eligibility: bool | None = None
+    requires_trading_volume: bool | None = None
+    restriction_flags: list[str] | None = None
 
 
 class FinanceListResponse(BaseModel):
@@ -172,8 +182,30 @@ class SummaryResponse(BaseModel):
     top_alpha_opportunity: dict[str, Any] | None = None
     top_finance_opportunity: dict[str, Any] | None = None
     top_activity_opportunity: dict[str, Any] | None = None
+    alpha_risk_trends: dict[str, Any] | None = None
     overall_highlights: list[dict[str, Any]]
     summary_text: str
+
+
+class AlphaTrendItem(BaseModel):
+    symbol: str
+    current_risk_score: float | None = None
+    current_risk_label: str | None = None
+    abnormal_flag: bool | None = None
+    risk_delta: float
+    score_delta: float
+    volatility_delta: float
+    spread_delta: float
+    trend_label: str
+    trend_reason: str
+
+
+class AlphaTrendResponse(BaseModel):
+    updated_at: str
+    window_snapshots: int
+    items: list[AlphaTrendItem]
+    top_worsening: AlphaTrendItem | None = None
+    top_improving: AlphaTrendItem | None = None
 
 
 EXAMPLE_RESPONSE = {
@@ -367,7 +399,13 @@ EXAMPLE_ACTIVITY_SCORED_RESPONSE = {
             "estimated_min_requirement": None,
             "estimated_min_requirement_usd": None,
             "low_barrier": True,
-            "low_barrier_reason": "无需明显资金门槛，操作简单"
+            "low_barrier_reason": "无需明显资金门槛，操作简单",
+            "complexity_score": 24.0,
+            "requires_kyc": False,
+            "requires_holding": False,
+            "requires_region_eligibility": False,
+            "requires_trading_volume": False,
+            "restriction_flags": []
         }
     ],
     "updated_at": "2026-03-14T05:58:33.776279+00:00",
@@ -415,6 +453,12 @@ EXAMPLE_SUMMARY_RESPONSE = {
         "score": 78.0,
         "low_barrier": True
     },
+    "alpha_risk_trends": {
+        "top_worsening": {
+            "symbol": "LYNUSDT",
+            "trend_label": "worsening"
+        }
+    },
     "overall_highlights": [
         {
             "type": "alpha",
@@ -423,6 +467,38 @@ EXAMPLE_SUMMARY_RESPONSE = {
         }
     ],
     "summary_text": "今日 Binance 机会总结（balanced 风格）..."
+}
+
+EXAMPLE_ALPHA_TREND_RESPONSE = {
+    "updated_at": "2026-03-14T06:00:00+00:00",
+    "window_snapshots": 6,
+    "items": [
+        {
+            "symbol": "LYNUSDT",
+            "current_risk_score": 78.4,
+            "current_risk_label": "high",
+            "abnormal_flag": True,
+            "risk_delta": 12.3,
+            "score_delta": 0.0012,
+            "volatility_delta": 0.0021,
+            "spread_delta": 0.0004,
+            "trend_label": "worsening",
+            "trend_reason": "整体风险上升；波动率抬升；价差扩大"
+        }
+    ],
+    "top_worsening": {
+        "symbol": "LYNUSDT",
+        "current_risk_score": 78.4,
+        "current_risk_label": "high",
+        "abnormal_flag": True,
+        "risk_delta": 12.3,
+        "score_delta": 0.0012,
+        "volatility_delta": 0.0021,
+        "spread_delta": 0.0004,
+        "trend_label": "worsening",
+        "trend_reason": "整体风险上升；波动率抬升；价差扩大"
+    },
+    "top_improving": None
 }
 
 
@@ -493,6 +569,19 @@ def get_alpha_stability_ranked(
     top: int = Query(default=settings.default_top, ge=1, le=20),
 ) -> dict[str, Any]:
     return service.get_ranked_report(top=top)
+
+
+@app.get(
+    "/alpha/stability/trends",
+    response_model=AlphaTrendResponse,
+    tags=["alpha"],
+    summary="获取 Alpha 风险变化趋势",
+    responses={200: {"content": {"application/json": {"example": EXAMPLE_ALPHA_TREND_RESPONSE}}}},
+)
+def get_alpha_stability_trends(
+    limit: int = Query(default=12, ge=2, le=120),
+) -> dict[str, Any]:
+    return service.get_risk_trends(limit=limit)
 
 
 @app.get(
